@@ -1,9 +1,12 @@
 #include <DS1307.h>
 #include <OneWire.h>
+#include <SoftwareSerial.h>
 #include "SensorData.h"
 #include "RingBuffer.h"
+#include "WebMngr.h"
 #define bufSize (5)
 
+SoftwareSerial ExtSerial(1,2);
 OneWire ds(10);
 byte scratchpad[12];
 float lastTemperatureC;
@@ -11,7 +14,9 @@ float lastTemperatureC;
 DS1307 RTC(A4, A5);
 Time lastRefreshDT;
 
-RingBuffer RB;// Ring buffer object
+
+RingBuffer RB;// Ring buffer class object
+WebMngr WIFI;// Wifi class object
 
 boolean flag_NeedSend = false;
 boolean flag_NeedRefreshData = true;
@@ -23,12 +28,14 @@ unsigned int LastMillisVal=0;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  ExtSerial.begin(9600);
+  WIFI.dbgOutput = PrintMessage;
   RTC.halt(false);
+  ExtSerial.println("Setup");
+
   //RTC.setTime(22, 48, 00);    
   //RTC.setDate(27, 8, 2015);
-  Serial.println("Setup");
-  
+
   
 }
 void loop ()
@@ -53,13 +60,13 @@ void ReadSerialCmd()
 {
   int i = 0;
   byte a;
-  while( Serial.available() && i< 99) {
-        a = Serial.read();
+  while( ExtSerial.available() && i< 99) {
+        a = ExtSerial.read();
         i++;
         switch (a){
           case 1:
             flag_SendData = true;
-            Serial.println("Cmd ReadData");
+            ExtSerial.println("Cmd ReadData");
             break;
         }
   }
@@ -69,13 +76,13 @@ void SendData()
 {
   if (!(flag_SendData&&flag_NeedSend))
     return;
-  Serial.println("\r\n====SendingData===;");
+  ExtSerial.println("\r\n====SendingData===;");
   while(RB.BufHasData()){
     SensorData val = RB.popTData();
-    Serial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
+    ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
   }
   
-  Serial.println("====End Data====");
+  ExtSerial.println("====End Data====");
   flag_NeedSend = false;
   flag_SendData = false;
 }
@@ -105,14 +112,14 @@ void saveTemperatureToRAM()
 }
 
 void PrintOutData(){
-  Serial.print("  Temperature = ");
-  Serial.print(lastTemperatureC);
-  Serial.print(" Celsius,\r\n");
+  ExtSerial.print("  Temperature = ");
+  ExtSerial.print(lastTemperatureC);
+  ExtSerial.print(" Celsius,\r\n");
   // Send date
-  Serial.print(RTC.getDateStr());
-  Serial.print(" -- ");
+  ExtSerial.print(RTC.getDateStr());
+  ExtSerial.print(" -- ");
   // Send time
-  Serial.println(RTC.getTimeStr());
+  ExtSerial.println(RTC.getTimeStr());
 }
 void readDS18B20Scratchpad()
 {
@@ -161,8 +168,8 @@ float getTemperatureCelsium()
 
 void PrintMessage(String val)
 {
-  Serial.print("Message: <");
-  Serial.print(val);
-  Serial.println(">");
+  ExtSerial.print("Message: <");
+  ExtSerial.print(val);
+  ExtSerial.println(">");
 }
 
