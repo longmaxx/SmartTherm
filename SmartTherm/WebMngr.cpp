@@ -26,4 +26,8 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
   }
   
 }
-
+void WebMngr:internetAccess()
+{
+  Serial.println( ' at+ping="ya.ru"' );
+  
+}
