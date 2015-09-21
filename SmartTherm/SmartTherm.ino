@@ -166,7 +166,7 @@ float getTemperatureCelsium()
   
 }
 
-void PrintMessage(String val)
+void PrintMessage(char val[])
 {
   ExtSerial.print("Message: <");
   ExtSerial.print(val);

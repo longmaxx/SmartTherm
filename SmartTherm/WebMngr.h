@@ -5,14 +5,14 @@
 #endif
 class WebMngr{
   public:
-  void (*dbgOutput)(String msg);
+  void (*dbgOutput)(char msg[]);
   
   void Setup_Hardware();
 //  String ListWifiNets();
   bool ConnectWifi(String sNetName,String sPassword);
-//  bool SendPostRequest(String sUrl, String sBody);
+  bool SendPostRequest(String sUrl, String sBody);
 //  bool IsWiFiConnected();
-//  bool IsInternetAvailable();
-  
+  bool internetAccess();
+  boolean  wifiCmd(char cmd[], int timeout, char answer[]);
 };
 
