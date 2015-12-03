@@ -43,17 +43,17 @@ void loop ()
   if (flag_NeedRefreshData){// пора обновлять температурные данные
     readDS18B20Scratchpad();
     lastTemperatureC = getTemperatureCelsium();
-    setLastRefreshDateTime();
     saveTemperatureToRAM();
+    setLastRefreshDateTime();
     PrintOutData();
     flag_NeedSend = true;
     flag_NeedRefreshData = false;
     //delay(1000);
     LastMillisVal = millis();
   }
-  CheckRefreshInterval();
-  ReadSerialCmd();
-  SendData();
+  CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
+  //ReadSerialCmd();
+  //SendData();
 }
 
 void ReadSerialCmd()
