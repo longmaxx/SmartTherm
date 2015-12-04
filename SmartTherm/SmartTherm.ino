@@ -6,7 +6,7 @@
 #include "WebMngr.h"
 #define bufSize (5)
 
-SoftwareSerial ExtSerial(1,2);
+SoftwareSerial ExtSerial(1,2);// debug serial port
 OneWire ds(10);
 byte scratchpad[12];
 float lastTemperatureC;
@@ -15,7 +15,7 @@ DS1307 RTC(A4, A5);
 Time lastRefreshDT;
 
 
-RingBuffer RB;// Ring buffer class object
+RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr WIFI;// Wifi class object
 
 boolean flag_NeedSend = false;
@@ -27,7 +27,7 @@ unsigned int DataRefreshIntervalMs = 10000;//ms
 unsigned int LastMillisVal=0;
 
 void setup() {
-  // put your setup code here, to run once:
+
   ExtSerial.begin(9600);
   WIFI.dbgOutput = PrintMessage;
   RTC.halt(false);
@@ -40,20 +40,24 @@ void setup() {
 }
 void loop ()
 {
-  if (flag_NeedRefreshData){// пора обновлять температурные данные
-    readDS18B20Scratchpad();
-    lastTemperatureC = getTemperatureCelsium();
-    saveTemperatureToRAM();
-    setLastRefreshDateTime();
-    PrintOutData();
-    flag_NeedSend = true;
-    flag_NeedRefreshData = false;
-    //delay(1000);
-    LastMillisVal = millis();
-  }
   CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
+  if (flag_NeedRefreshData){// пора обновлять температурные данные
+    RefreshDataActions();
+  }
   //ReadSerialCmd();
   //SendData();
+}
+
+void RefreshDataActions()
+{
+  readDS18B20Scratchpad();
+  lastTemperatureC = getTemperatureCelsium();
+  saveTemperatureToRAM();
+  setLastRefreshDateTime();
+  PrintOutData();
+  flag_NeedSend = true;
+  flag_NeedRefreshData = false;
+  LastMillisVal = millis();
 }
 
 void ReadSerialCmd()
@@ -78,8 +82,11 @@ void SendData()
     return;
   ExtSerial.println("\r\n====SendingData===;");
   while(RB.BufHasData()){
-    SensorData val = RB.popTData();
+    SensorData val = RB.popTData();// забираем из буфера данные
+    // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
+    // отсылаем данные по HTTP
+    //SendHTTPData(val);
   }
   
   ExtSerial.println("====End Data====");
