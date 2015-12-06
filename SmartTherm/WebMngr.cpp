@@ -77,11 +77,12 @@ bool WebMngr::SendPostRequest(String sUrl, String sBody)
   Serial.println(cmd);
   delay(2000);
   //Serial.find("+IPD");
+  String c = "";
   while (Serial.available()) {
-    /*char c = wifiSerial.read();
-    this->dbgOutput.write(c);*/
-    this->dbgOutput(Serial.read());
+    c += Serial.read();
+    /*this->dbgOutput.write(c);*/
   }
+  this->dbgOutput(c);
   return true;
 }
 

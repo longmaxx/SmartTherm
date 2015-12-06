@@ -5,7 +5,7 @@
 #endif
 class WebMngr{
   public:
-  void (*dbgOutput)(char msg[]);
+  void (*dbgOutput)(String msg);
   
   void Setup_Hardware();
 //  String ListWifiNets();

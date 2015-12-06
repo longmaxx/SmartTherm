@@ -6,21 +6,61 @@
 #include "WebMngr.h"
 #define bufSize (5)
 
-SoftwareSerial ExtSerial(1,2);// debug serial port
+/*
+  NANO3.0 pins
+  Left
+  Tx (D0)  - ESP USART
+  Rx (D1)  - ESP USART
+  Reset
+  Gnd
+  D2
+  D3
+  D4
+  D5
+  D6
+  D7    - ExtSerial
+  D8    - ExtSerial
+  D9
+  D10   - OneWire
+  D11
+  D12
+
+  Right
+  VIN
+  Gnd
+  Reset
+  5V
+  A0(14)
+  A1(15)
+  A2(16)
+  A3(17)
+  A4(18)  - RTC i2c
+  A5(19)  - RTC i2c
+  A6
+  A7
+  ARef
+  3v3 out
+  D13 (LED)
+  
+*/
+
+SoftwareSerial ExtSerial(7,8);// debug serial port
 OneWire ds(10);
+DS1307 RTC(18, 19);
+
+Time lastRefreshDT;
 byte scratchpad[12];
 float lastTemperatureC;
 
-DS1307 RTC(A4, A5);
-Time lastRefreshDT;
+
 
 
 RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr WIFI;// Wifi class object
 
-boolean flag_NeedSend = false;
-boolean flag_NeedRefreshData = true;
-boolean flag_SendData = false;
+boolean flag_NeedSend = false;// есть несохраненные данные
+boolean flag_NeedRefreshData = true;// надо обноалять данные с датчиков
+boolean flag_SendData = false;// есть наддые для отсылки на сервер
 
 
 unsigned int DataRefreshIntervalMs = 10000;//ms
@@ -173,7 +213,7 @@ float getTemperatureCelsium()
   
 }
 
-void PrintMessage(char val[])
+void PrintMessage(String val)
 {
   ExtSerial.print("Message: <");
   ExtSerial.print(val);
