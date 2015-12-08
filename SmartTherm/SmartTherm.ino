@@ -52,16 +52,17 @@ Time lastRefreshDT;
 byte scratchpad[12];
 float lastTemperatureC;
 
-
+String WifiAP_Name = "Kot_Net_Guest";
+String WifiAP_Pwd = "WelcomeAll";
 
 
 RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
-WebMngr WIFI;// Wifi class object
+WebMngr ESPMod;// Wifi class object
 
 boolean flag_NeedSend = false;// есть несохраненные данные
 boolean flag_NeedRefreshData = true;// надо обноалять данные с датчиков
 boolean flag_SendData = false;// есть наддые для отсылки на сервер
-
+boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 
 unsigned int DataRefreshIntervalMs = 10000;//ms
 unsigned int LastMillisVal=0;
@@ -69,7 +70,7 @@ unsigned int LastMillisVal=0;
 void setup() {
 
   ExtSerial.begin(9600);
-  WIFI.dbgOutput = PrintMessage;
+  ESPMod.dbgOutput = PrintMessage;
   RTC.halt(false);
   ExtSerial.println("Setup");
 
@@ -80,6 +81,9 @@ void setup() {
 }
 void loop ()
 {
+  if (flag_ESP_NeedConfigure){
+    ConfigureESPWifi();//если необъодимо - переподключаем вайфай
+  }  
   CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
   if (flag_NeedRefreshData){// пора обновлять температурные данные
     RefreshDataActions();
@@ -218,5 +222,19 @@ void PrintMessage(String val)
   ExtSerial.print("Message: <");
   ExtSerial.print(val);
   ExtSerial.println(">");
+}
+
+void ConfigureESPWifi()
+{
+  ESPMod.Setup_Hardware();
+  if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
+    ESPMod.ListWifiAPs();
+    return;
+  }  
+  //проверяем пинг
+  if (!ESPMod.InternetAccess()){
+    return;
+  }
+  flag_ESP_NeedConfigure = false;
 }
 
