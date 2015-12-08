@@ -9,7 +9,7 @@ void WebMngr::Setup_Hardware()
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
   Serial.println("AT+CWMODE=1");
-  String cmd="AT+CWJAP=\"";
+  String cmd="AT+CWJAP_CUR=\"";
   cmd+=sNetName;
   cmd+="\",\"";
   cmd+=sPassword;
@@ -27,7 +27,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
   
 }
 
-bool WebMngr::internetAccess()
+bool WebMngr::InternetAccess()
 {
   Serial.println( ' at+ping="ya.ru"' );
   delay(2000);
@@ -38,6 +38,10 @@ bool WebMngr::internetAccess()
     this->dbgOutput("Fail ping internet.");
     return false;
   }
+}
+
+boolean WebMngr::ListWifiAPs(){
+  return this->wifiCmd("AT+CWLAP",5000,"OK");
 }
 
 boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {

@@ -5,14 +5,13 @@
 #endif
 class WebMngr{
   public:
-  void (*dbgOutput)(String msg);
+  void (*dbgOutput)(String msg);// указатель на функцию обработчик вывода в лог. заполняется после создания экземпляра класса
   
   void Setup_Hardware();
-//  String ListWifiNets();
+  boolean ListWifiAPs();
   bool ConnectWifi(String sNetName,String sPassword);
   bool SendPostRequest(String sUrl, String sBody);
-//  bool IsWiFiConnected();
-  bool internetAccess();
+  bool InternetAccess();
   boolean  wifiCmd(char cmd[], int timeout, char answer[]);
 };
 
