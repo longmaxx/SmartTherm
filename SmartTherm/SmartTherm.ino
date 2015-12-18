@@ -18,12 +18,12 @@
   D4
   D5
   D6
-  D7    - ExtSerial
-  D8    - ExtSerial
+  D7
+  D8
   D9
-  D10   - OneWire
-  D11
-  D12
+  D10   - ExtSerial
+  D11   - ExtSerial
+  D12- OneWire
 
   Right
   VIN
@@ -44,17 +44,18 @@
   
 */
 
-SoftwareSerial ExtSerial(7,8);// debug serial port
-OneWire ds(10);
+SoftwareSerial ExtSerial(10,11);// debug serial port
+OneWire ds(12);
 DS1307 RTC(18, 19);
 
 Time lastRefreshDT;
 byte scratchpad[12];
 float lastTemperatureC;
 
-String WifiAP_Name = "Kot_Net_Guest";
-String WifiAP_Pwd = "WelcomeAll";
+String WifiAP_Name = "KotNet";
+String WifiAP_Pwd = "MyKotNet123";
 
+String sDeviceName = "Nano1";
 
 RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod;// Wifi class object
@@ -71,7 +72,7 @@ void setup() {
 
   ExtSerial.begin(9600);
   ESPMod.dbgOutput = PrintMessage;
-  RTC.halt(false);
+  //RTC.halt(false);
   ExtSerial.println("Setup");
 
   //RTC.setTime(22, 48, 00);    
@@ -130,7 +131,7 @@ void SendData()
     // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
     // отсылаем данные по HTTP
-    //SendHTTPData(val);
+    SendHTTPData(val);
   }
   
   ExtSerial.println("====End Data====");
@@ -228,7 +229,7 @@ void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-    ESPMod.ListWifiAPs();
+    //ESPMod.ListWifiAPs();
     return;
   }  
   //проверяем пинг

@@ -9,18 +9,19 @@ void WebMngr::Setup_Hardware()
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
   Serial.println("AT+CWMODE=1");
+  delay(1000);
   String cmd="AT+CWJAP_CUR=\"";
   cmd+=sNetName;
   cmd+="\",\"";
   cmd+=sPassword;
   cmd+="\"";
-  //dbgSerial.println(cmd);
   Serial.println(cmd);
-  delay(2000);
+  delay(5000);
   if(Serial.find("OK")){
     this->dbgOutput("OK, Connected to WiFi.");
     return true;
   }else{
+    //Serial.print("hui");
     this->dbgOutput("Can not connect to the WiFi.");
     return false;
   }
