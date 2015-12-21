@@ -61,7 +61,7 @@ boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
   }
 }
 
-bool WebMngr::SendPostRequest(String sUrl, String sBody)
+bool WebMngr::SendGetRequest(String sUrl, String sBody)
 {
  wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.0.115\",80",1000,"OK");
   if(Serial.find("Error"))

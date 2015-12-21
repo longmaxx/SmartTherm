@@ -12,7 +12,9 @@ class RingBuffer{
   public:
     bool BufHasData();
     byte nextBufIndex(byte i);
+    byte prevBufIndex(byte i);
     SensorData popTData();
+    void CancelPopData();
     void pushTData(SensorData value);
 };
 

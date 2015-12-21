@@ -90,7 +90,7 @@ void loop ()
     RefreshDataActions();
   }
   //ReadSerialCmd();
-  //SendData();
+  SendData();
 }
 
 void RefreshDataActions()
@@ -123,6 +123,7 @@ void ReadSerialCmd()
 
 void SendData()
 {
+  boolean bSendSuccessful = true;
   if (!(flag_SendData&&flag_NeedSend))
     return;
   ExtSerial.println("\r\n====SendingData===;");
@@ -131,12 +132,17 @@ void SendData()
     // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
     // отсылаем данные по HTTP
-    SendHTTPData(val);
+    if (!SendData_Http(val)){
+      RB.CancelPopData();
+      bSendSuccessful = true;
+    }
   }
   
   ExtSerial.println("====End Data====");
-  flag_NeedSend = false;
-  flag_SendData = false;
+  if (bSendSuccessful){
+    flag_NeedSend = false;
+    flag_SendData = false;
+  }
 }
 
 //выставляем флаг обновления данных если прошел интервал ожидания
@@ -238,4 +244,15 @@ void ConfigureESPWifi()
   }
   flag_ESP_NeedConfigure = false;
 }
+
+boolean SendData_Http(SensorData data)
+{
+  String sUrl = "TMon/index.php?t=site/commitTemp";
+  sUrl+="&celsium="+(String)data.Temperature;
+  sUrl+="&date="+data.Timestamp.year + data.Timestamp.month +data.Timestamp.day +data.Timestamp.hour +data.Timestamp.minute +data.Timestamp.second;
+  sUrl+="&devicename=" + sDeviceName;
+  String sBody="";
+  return ESPMod.SendGetRequest(sUrl,sBody);
+}
+
 

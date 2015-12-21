@@ -10,7 +10,16 @@ byte RingBuffer::nextBufIndex(byte i)
   }else{
     return ++i;
   }
-  
+}
+
+byte RingBuffer::prevBufIndex(byte i)
+{
+  if (i == 0){
+    // крайнее левое положение
+    return (sizeof(this->RingBuf)-1);
+  }else{
+    return --i;
+  }
 }
 
 
@@ -18,15 +27,15 @@ void RingBuffer::pushTData(SensorData value)
 {
   // сохраняет данные в конец кольцевого буфера
   //сдвигаемся на следующую ячейку в буфере
-  RingBuf[lastBufIndex] = value;
-  //PrintMessage("Before "+(String)firstBufIndex + "," + (String)lastBufIndex);
-  lastBufIndex = nextBufIndex(lastBufIndex);
+  RingBuf[this->lastBufIndex] = value;
+  //PrintMessage("Before "+(String)this.firstBufIndex + "," + (String)this.lastBufIndex);
+  this->lastBufIndex = nextBufIndex(this->lastBufIndex);
   //lastBufIndex++;
-  //PrintMessage("After "+(String)firstBufIndex + "," + (String)lastBufIndex);
+  //PrintMessage("After "+(String)this.firstBufIndex + "," + (String)this.lastBufIndex);
   // если начало и конец совпали - сдвигаем начало на 1
-  if (firstBufIndex == lastBufIndex){
+  if (this->firstBufIndex == this->lastBufIndex){
     //PrintMessage("Data buffer is full. Old data will be lost.");
-    firstBufIndex = nextBufIndex(firstBufIndex);
+    this->firstBufIndex = nextBufIndex(this->firstBufIndex);
   }
   //PrintMessage("Push data. "+(String)firstBufIndex + "," + (String)lastBufIndex);
   
@@ -38,12 +47,17 @@ SensorData RingBuffer::popTData()
 {
   // извлекает последнее значение из кольцевого буфера
   if (BufHasData()){
-    byte i = firstBufIndex;
-    firstBufIndex = nextBufIndex(firstBufIndex);
+    byte i = this->firstBufIndex;
+    this->firstBufIndex = nextBufIndex(this->firstBufIndex);
     return RingBuf[i];
   } else{
     //PrintMessage("Cannot pop data. Buffer is empty.");
   }
+}
+
+void RingBuffer::CancelPopData()
+{
+  this->firstBufIndex = prevBufIndex(this->firstBufIndex);
 }
 //
 bool RingBuffer::BufHasData()
