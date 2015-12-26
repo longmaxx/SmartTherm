@@ -47,47 +47,43 @@ boolean WebMngr::ListWifiAPs(){
 
 boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
   this->dbgOutput(cmd);
-  Serial.print(cmd);
-  Serial.println();
-  delay(timeout);
+  Serial.flush();
+  Serial.println(cmd);
+  //delay(timeout);
   if(Serial.find(answer)) {
-    this->dbgOutput(answer);
+   // this->dbgOutput("Cmd ok");
     return true;
   } else {
-    this->dbgOutput("errCmd:|");
-    this->dbgOutput(answer);
-    this->dbgOutput("|");
+    //this->dbgOutput("CmdFail");
+    //this->dbgOutput(answer);
+    //this->dbgOutput("|");
     return false;
   }
 }
 
-bool WebMngr::SendGetRequest(String sUrl, String sBody)
+bool WebMngr::SendGetRequest(String sUrl)
 {
- wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.0.115\",80",1000,"OK");
-  if(Serial.find("Error"))
+  if(!wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80",2000,"OK")){
+    Serial.println("AT+CIPCLOSE");
     return false;
-  char cmd[] = "GET / HTTP/1.0\r\n\r\n";
-  this->dbgOutput("AT+CIPSEND=");
-  //this->dbgOutput(sizeof(cmd));
+  }
+  String msgBegin = "GET /";
+  String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   Serial.print("AT+CIPSEND=");
-  Serial.println(strlen(cmd));
-  delay(1000);
-  if(Serial.find(">")) {
-    this->dbgOutput(">");
-  } else {
+  Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
+  delay(2000);
+  if(!Serial.find(">")) {
+    //this->dbgOutput("Not found \">\" sign");
     Serial.println("AT+CIPCLOSE");
     delay(1000);
     return false;
   }
-  Serial.println(cmd);
-  delay(2000);
-  //Serial.find("+IPD");
-  String c = "";
-  while (Serial.available()) {
-    c += Serial.read();
-    /*this->dbgOutput.write(c);*/
-  }
-  this->dbgOutput(c);
-  return true;
+  Serial.print(msgBegin);
+  Serial.print(sUrl);
+  Serial.print(msgEnd);
+  delay(5000);
+  boolean res = Serial.find("\"status\":\"success\"");
+  Serial.println("AT+CIPCLOSE");
+  return res;
 }
 

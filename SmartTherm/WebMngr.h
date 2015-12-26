@@ -10,7 +10,7 @@ class WebMngr{
   void Setup_Hardware();
   boolean ListWifiAPs();
   bool ConnectWifi(String sNetName,String sPassword);
-  bool SendGetRequest(String sUrl, String sBody);
+  bool SendGetRequest(String sUrl);
   bool InternetAccess();
   boolean  wifiCmd(char cmd[], int timeout, char answer[]);
 };

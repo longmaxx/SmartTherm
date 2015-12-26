@@ -66,7 +66,7 @@ boolean flag_SendData = false;// есть наддые для отсылки н�
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 
 unsigned int DataRefreshIntervalMs = 10000;//ms
-unsigned int LastMillisVal=0;
+unsigned long LastMillisVal=0;
 
 void setup() {
 
@@ -77,8 +77,6 @@ void setup() {
 
   //RTC.setTime(22, 48, 00);    
   //RTC.setDate(27, 8, 2015);
-
-  
 }
 void loop ()
 {
@@ -90,11 +88,13 @@ void loop ()
     RefreshDataActions();
   }
   //ReadSerialCmd();
+  flag_SendData = true;
   SendData();
 }
 
 void RefreshDataActions()
 {
+  ExtSerial.println("Refreshing Data!");
   readDS18B20Scratchpad();
   lastTemperatureC = getTemperatureCelsium();
   saveTemperatureToRAM();
@@ -133,6 +133,7 @@ void SendData()
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
     // отсылаем данные по HTTP
     if (!SendData_Http(val)){
+      ExtSerial.println("Cancel POP data");
       RB.CancelPopData();
       bSendSuccessful = true;
     }
@@ -148,10 +149,15 @@ void SendData()
 //выставляем флаг обновления данных если прошел интервал ожидания
 void CheckRefreshInterval()
 {
-  if ((millis()-LastMillisVal)>DataRefreshIntervalMs)
+  unsigned long m = millis();
+  unsigned long delta;
+  if (m<LastMillisVal){
+    delta =  (0xFFFFFFFF-LastMillisVal)+m;
+  }else{
+    delta = m-LastMillisVal;
+  }
+  if (delta>DataRefreshIntervalMs)
     flag_NeedRefreshData = true;
-  else
-    flag_NeedRefreshData = false;  
 }
 
 void setLastRefreshDateTime()
@@ -247,12 +253,23 @@ void ConfigureESPWifi()
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?t=site/commitTemp";
-  sUrl+="&celsium="+(String)data.Temperature;
-  sUrl+="&date="+data.Timestamp.year + data.Timestamp.month +data.Timestamp.day +data.Timestamp.hour +data.Timestamp.minute +data.Timestamp.second;
-  sUrl+="&devicename=" + sDeviceName;
-  String sBody="";
-  return ESPMod.SendGetRequest(sUrl,sBody);
+  String sUrl = "TMon/index.php?route=t/commit";
+  sUrl=sUrl + "&devicename=" + sDeviceName;
+  sUrl=sUrl + "&celsium="+(String)((int)data.Temperature);
+  sUrl=sUrl + "&date="+data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
+  ExtSerial.print("Send HttpRequest Url:");
+  ExtSerial.println(sUrl);
+  return ESPMod.SendGetRequest(sUrl);
 }
+
+String firstZero(int val)
+{
+  if (val<10){
+    return "0"+(String)val;  
+  }else{
+    return (String)val    ;
+  }
+}
+
 
 
