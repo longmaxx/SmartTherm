@@ -135,7 +135,8 @@ void SendData()
     if (!SendData_Http(val)){
       ExtSerial.println("Cancel POP data");
       RB.CancelPopData();
-      bSendSuccessful = true;
+      bSendSuccessful = false;
+      break;
     }
   }
   
