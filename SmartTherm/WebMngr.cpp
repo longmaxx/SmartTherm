@@ -51,10 +51,8 @@ boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
   Serial.println(cmd);
   //delay(timeout);
   if(Serial.find(answer)) {
-   // this->dbgOutput("Cmd ok");
     return true;
   } else {
-    //this->dbgOutput("CmdFail");
     //this->dbgOutput(answer);
     //this->dbgOutput("|");
     return false;
@@ -72,17 +70,14 @@ bool WebMngr::SendGetRequest(String sUrl)
   Serial.print("AT+CIPSEND=");
   Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
   delay(2000);
-  if(!Serial.find(">")) {
-    //this->dbgOutput("Not found \">\" sign");
-    Serial.println("AT+CIPCLOSE");
-    delay(1000);
-    return false;
-  }
-  Serial.print(msgBegin);
-  Serial.print(sUrl);
-  Serial.print(msgEnd);
-  delay(5000);
-  boolean res = Serial.find("\"status\":\"success\"");
+  boolean res= false;
+  if(Serial.find(">")) {
+    Serial.print(msgBegin);
+    Serial.print(sUrl);
+    Serial.print(msgEnd);
+    delay(5000);
+    boolean res = Serial.find("success");
+  }  
   Serial.println("AT+CIPCLOSE");
   return res;
 }

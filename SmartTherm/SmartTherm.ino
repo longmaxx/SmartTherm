@@ -74,7 +74,7 @@ void setup() {
   ESPMod.dbgOutput = PrintMessage;
   //RTC.halt(false);
   ExtSerial.println("Setup");
-
+  
   //RTC.setTime(22, 48, 00);    
   //RTC.setDate(27, 8, 2015);
 }
@@ -241,6 +241,7 @@ void PrintMessage(String val)
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
+  ESPMod.wifiCmd("ATE=0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
     //ESPMod.ListWifiAPs();
     return;
