@@ -13,5 +13,7 @@ class WebMngr{
   bool SendGetRequest(String sUrl);
   bool InternetAccess();
   boolean  wifiCmd(char cmd[], int timeout, char answer[]);
+
+  private: bool WaitStrSerial(char strEtalon[],int timeout);
 };
 

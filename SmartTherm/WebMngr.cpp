@@ -25,7 +25,6 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
     this->dbgOutput("Can not connect to the WiFi.");
     return false;
   }
-  
 }
 
 bool WebMngr::InternetAccess()
@@ -69,16 +68,40 @@ bool WebMngr::SendGetRequest(String sUrl)
   String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   Serial.print("AT+CIPSEND=");
   Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
-  delay(2000);
   boolean res= false;
-  if(Serial.find(">")) {
+  delay(2000);
+  if(this->WaitStrSerial(">",2000)) {
     Serial.print(msgBegin);
     Serial.print(sUrl);
     Serial.print(msgEnd);
-    delay(5000);
-    boolean res = Serial.find("success");
+    delay(4000);
+    bool res = this->WaitStrSerial("success",5000);
   }  
   Serial.println("AT+CIPCLOSE");
   return res;
+}
+
+bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
+{
+  //unsigned long end1 = millis()+timeout;// possibletroubles with millis overflow
+  unsigned char index = 0;
+  unsigned char maxIndex = sizeof (strEtalon)-1;
+  while (Serial.available() /*|| (millis()<end1)*/){
+    this->dbgOutput("Iterate ");
+    //this->dbgOutput((String)index);
+    char a = Serial.read();
+    if (a == strEtalon[index]){
+      index++;
+    }else{
+      this->dbgOutput((String)a);
+      index = 0;
+    }
+    if (index == (maxIndex)){
+      this->dbgOutput("DbgSer_true");
+      return true;
+    }  
+  }
+  this->dbgOutput("DbgSer_false");
+  return false;
 }
 
