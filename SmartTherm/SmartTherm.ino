@@ -69,15 +69,17 @@ unsigned int DataRefreshIntervalMs = 10000;//ms
 unsigned long LastMillisVal=0;
 
 void setup() {
-
   ExtSerial.begin(9600);
   ESPMod.dbgOutput = PrintMessage;
+  ESPMod.dbgOutputCh = PrintMessageCh;
+  ESPMod.dbgOutputChr = PrintMessageChr;
   //RTC.halt(false);
   ExtSerial.println("Setup");
   
   //RTC.setTime(22, 48, 00);    
   //RTC.setDate(27, 8, 2015);
 }
+
 void loop ()
 {
   if (flag_ESP_NeedConfigure){
@@ -238,10 +240,24 @@ void PrintMessage(String val)
   ExtSerial.println(">");
 }
 
+void PrintMessageCh(char val)
+{
+  ExtSerial.print("MessageCh: <");
+  ExtSerial.print(val);
+  ExtSerial.println(">");
+}
+
+void PrintMessageChr(char val[])
+{
+  ExtSerial.print("MessageCh: <");
+  ExtSerial.print(val);
+  ExtSerial.println(">");
+}
+
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
-  ESPMod.wifiCmd("ATE=0",1000,"OK");
+  //ESPMod.wifiCmd("ATE=0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
     //ESPMod.ListWifiAPs();
     return;
@@ -255,10 +271,7 @@ void ConfigureESPWifi()
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?route=t/commit";
-  sUrl=sUrl + "&devicename=" + sDeviceName;
-  sUrl=sUrl + "&celsium="+(String)((int)data.Temperature);
-  sUrl=sUrl + "&date="+data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
+  String sUrl = "TMon/index.php?route=t/commit" + (String)"&devicename=" + sDeviceName + "&celsium="+(String)((int)data.Temperature) + "&date="+(String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
   ExtSerial.print("Send HttpRequest Url:");
   ExtSerial.println(sUrl);
   return ESPMod.SendGetRequest(sUrl);
