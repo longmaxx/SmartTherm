@@ -257,15 +257,16 @@ void PrintMessageChr(char val[])
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
-  //ESPMod.wifiCmd("ATE=0",1000,"OK");
+  delay(5000);
+  ESPMod.wifiCmd("ATE0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
     //ESPMod.ListWifiAPs();
     return;
   }  
   //проверяем пинг
-  if (!ESPMod.InternetAccess()){
-    return;
-  }
+  //if (!ESPMod.InternetAccess()){
+  //  return;
+ // }
   flag_ESP_NeedConfigure = false;
 }
 
