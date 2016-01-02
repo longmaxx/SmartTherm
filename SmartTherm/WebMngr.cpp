@@ -45,7 +45,7 @@ boolean WebMngr::ListWifiAPs(){
 }
 
 boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
-  this->dbgOutput(cmd);
+  //this->dbgOutput(cmd);
   Serial.flush();
   Serial.println(cmd);
   //delay(timeout);
@@ -60,51 +60,49 @@ boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
 
 bool WebMngr::SendGetRequest(String sUrl)
 {
+  String msgBegin = "GET /";
+  String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   if(!wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80",2000,"OK")){
     Serial.println("AT+CIPCLOSE");
     return false;
   }
-  String msgBegin = "GET /";
-  String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   Serial.flush();
   Serial.print("AT+CIPSEND=");
   Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
   boolean res= false;
-  if(this->WaitStrSerial(">",2000)) {
+  delay(5000);
+  if(this->WaitStrSerial(">",5000)) {
     Serial.print(msgBegin);
     Serial.print(sUrl);
+    Serial.flush();
     Serial.print(msgEnd);
-    bool res = this->WaitStrSerial("success",15000);
+    res = this->WaitStrSerial("success",5000);
+    this->WaitStrSerial("CLOSED",15000);
+    Serial.flush();
   }  
   //Serial.println("aftersend\r\n");
-  Serial.println("AT+CIPCLOSE");
+  Serial.flush();
+  Serial.println("AT+CIPCLOSE\r\n");
+  delay(2000);
   Serial.flush();
   return res;
 }
 
 bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
 {
-  unsigned long millis1 = millis();
+  //unsigned long millis1 = millis();
   unsigned long end1 = millis()+(unsigned long)timeout;// possibletroubles with millis overflow
   unsigned long notExpired = true;
   unsigned char index = 0;
   unsigned char maxIndex = strlen (strEtalon);
   char a;
-  this->dbgOutput( String(maxIndex));
+  //this->dbgOutput( String(maxIndex));
   while (notExpired){
-    //this->dbgOutputChr("ITR");
-    if (Serial.available()>0){
+    while (Serial.available()>0){
       a = Serial.read();
-      this->dbgOutputCh(a);
-      char b = strEtalon[index];
-      if (a == b){
-        //this->dbgOutputChr("Compare");
-        //this->dbgOutputCh(a);
-       // this->dbgOutputCh(b);
-        //this->dbgOutput((String)index);
+      if (strEtalon[index] == a){
         index++;
       }else{
-        //this->dbgOutput("IndexReset");
         index = 0;
       }
       if (index == (maxIndex)){
@@ -115,12 +113,12 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
     }
     notExpired = (end1>millis());
   }
-   unsigned long millis2 = millis();
+//   unsigned long millis2 = millis();
    this->dbgOutputChr("WaitStrSerial_false");
-   char buf[10];
-   this->dbgOutputChr(ltoa(millis1, buf, 10));
-   this->dbgOutputChr(ltoa(millis2, buf, 10));
-   this->dbgOutputChr(ltoa(end1, buf, 10));
+//   char buf[10];
+//   this->dbgOutputChr(ltoa(millis1, buf, 10));
+// /  this->dbgOutputChr(ltoa(millis2, buf, 10));
+//   this->dbgOutputChr(ltoa(end1, buf, 10));
   return false;
 }
 
