@@ -4,6 +4,7 @@
 #include "SensorData.h"
 #include "RingBuffer.h"
 #include "WebMngr.h"
+#include "UserCmdMngr.h"
 #define bufSize (5)
 
 /*
@@ -57,6 +58,8 @@ String WifiAP_Pwd = "MyKotNet123";
 
 String sDeviceName = "Nano1";
 
+
+UserCmdMngr CmdMngr1;
 RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod;// Wifi class object
 
@@ -69,6 +72,7 @@ unsigned int DataRefreshIntervalMs = 60000;//ms
 unsigned long LastMillisVal=0;
 
 void setup() {
+  CmdMngr1.Init(&ExtSerial);
   ExtSerial.begin(9600);
   ESPMod.dbgOutput = PrintMessage;
   ESPMod.dbgOutputCh = PrintMessageCh;
@@ -92,6 +96,7 @@ void loop ()
   //ReadSerialCmd();
   flag_SendData = true;
   SendData();
+  CmdMngr1.SerialPortLoop();
 }
 
 void RefreshDataActions()
