@@ -1,8 +1,7 @@
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #ifndef WEMNGR_H
   #define WEBMNGR_H
-#endif
+
 class WebMngr{
   public:
   void (*dbgOutput)(String msg);// указатель на функцию обработчик вывода в лог. заполняется после создания экземпляра класса
@@ -18,4 +17,4 @@ class WebMngr{
 
   private: bool WaitStrSerial(char strEtalon[],int timeout);
 };
-
+#endif
