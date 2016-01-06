@@ -65,7 +65,7 @@ boolean flag_NeedRefreshData = true;// надо обноалять данные 
 boolean flag_SendData = false;// есть наддые для отсылки на сервер
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 
-unsigned int DataRefreshIntervalMs = 10000;//ms
+unsigned int DataRefreshIntervalMs = 60000;//ms
 unsigned long LastMillisVal=0;
 
 void setup() {
@@ -76,8 +76,8 @@ void setup() {
   //RTC.halt(false);
   ExtSerial.println("Setup");
   
-  //RTC.setTime(22, 48, 00);    
-  //RTC.setDate(27, 8, 2015);
+  //RTC.setTime(23, 05, 00);    
+  //RTC.setDate(3, 1, 2016);
 }
 
 void loop ()
@@ -99,8 +99,8 @@ void RefreshDataActions()
   ExtSerial.println("Refreshing Data!");
   readDS18B20Scratchpad();
   lastTemperatureC = getTemperatureCelsium();
-  saveTemperatureToRAM();
   setLastRefreshDateTime();
+  saveTemperatureToRAM();
   PrintOutData();
   flag_NeedSend = true;
   flag_NeedRefreshData = false;
@@ -183,10 +183,18 @@ void PrintOutData(){
   ExtSerial.print(lastTemperatureC);
   ExtSerial.print(" Celsius,\r\n");
   // Send date
-  ExtSerial.print(RTC.getDateStr());
+  ExtSerial.print(lastRefreshDT.year);
+  ExtSerial.print("-");
+  ExtSerial.print(lastRefreshDT.mon);
+  ExtSerial.print("-");
+  ExtSerial.print(lastRefreshDT.date);
   ExtSerial.print(" -- ");
   // Send time
-  ExtSerial.println(RTC.getTimeStr());
+  ExtSerial.print(lastRefreshDT.hour);
+  ExtSerial.print(":");
+  ExtSerial.print(lastRefreshDT.min);
+  ExtSerial.print(":");
+  ExtSerial.println(lastRefreshDT.sec);
 }
 void readDS18B20Scratchpad()
 {
