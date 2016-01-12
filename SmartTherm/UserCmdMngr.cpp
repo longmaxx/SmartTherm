@@ -13,31 +13,45 @@ void UserCmdMngr::Init(SoftwareSerial* pSWSP)
 
 void UserCmdMngr::SerialPortLoop()
 {
-  boolean bEndFound = false;
+  boolean bEOLFound = false;
   //this->bufIndex = 0;
   //считываем  данные из порта пока они есть или до заполнения буфера
   while (this->SPort->available()>0){
     char curByte;
     curByte = this->SPort->read();
-    if (curByte == '\r'){
+    if (curByte == '\n'){
       this->buf[this->bufIndex++]='\0';
-      bEndFound = true;
+      bEOLFound = true;
       break;
     }else{
-      this->buf[this->bufIndex++]=curByte;
+      //this->SPort->write(curByte);
+      if (curByte != '\r'){
+        this->buf[this->bufIndex++]=curByte;
+      }  
+    }
+    if (this->bufIndex == bufLen){
+      this->bufIndex=0;
+      this->SPort->println("<ERROR>");
+      this->SPort->flush();
+      return;
     }
   }
   // проверяем буфер на наличие команды
-  if ((bEndFound)&&
+  if ((bEOLFound)&&
       (this->buf[0] == 'C')&&
       (this->buf[1] == 'M')&&
       (this->buf[2] == 'D')&&
       (this->buf[3] == ':')
                             ){
-    unsigned char cmd = this->parseCmdName();
+                              
+    char cmd = this->parseCmdName();
     if (cmd == 1){
       this->Cmd_Hello();
     }
+    
+  }
+  if(bEOLFound){
+    this->bufIndex=0;
   }
 }
 
@@ -72,15 +86,16 @@ unsigned char UserCmdMngr::parseCmdName()
   }
   // считаем что получилось по поиску
   for (unsigned char k = 0;k<commandsCount;k++ ){
-    if (foundState[k]!=ST_OVERFLOW)
-      return k;
+    if (foundState[k]!=ST_OVERFLOW){
+      return k+1;
+    }  
   }
   return 0;
 }
 
 void UserCmdMngr::Cmd_Hello()
 {
-  this->SPort->println("OK");  
+  this->SPort->println("Hello OK");  
 }
 
 
