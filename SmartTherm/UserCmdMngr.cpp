@@ -44,11 +44,10 @@ void UserCmdMngr::SerialPortLoop()
       (this->buf[3] == ':')
                             ){
                               
-    char cmd = this->parseCmdName();
-    if (cmd == 1){
-      this->Cmd_Hello();
-    }
-    
+    this->lastFoundCmd = this->parseCmdName();
+    if (this->lastFoundCmd == 0){
+      this->SPort->println("Error: Unknown command!");  
+    }  
   }
   if(bEOLFound){
     this->bufIndex=0;
@@ -93,9 +92,10 @@ unsigned char UserCmdMngr::parseCmdName()
   return 0;
 }
 
-void UserCmdMngr::Cmd_Hello()
+unsigned char UserCmdMngr::PopLatestParsedCmd()
 {
-  this->SPort->println("Hello OK");  
+  unsigned char val = this->lastFoundCmd;
+  this->lastFoundCmd = 0;
 }
 
 

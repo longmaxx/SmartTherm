@@ -5,7 +5,7 @@
 #include "RingBuffer.h"
 #include "WebMngr.h"
 #include "UserCmdMngr.h"
-#define bufSize (5)
+
 
 /*
   NANO3.0 pins
@@ -49,23 +49,22 @@ SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire ds(12);
 DS1307 RTC(18, 19);
 
-Time lastRefreshDT;
+Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
 float lastTemperatureC;
 
 String WifiAP_Name = "KotNet";
-String WifiAP_Pwd = "MyKotNet123";
+String WifiAP_Pwd  = "MyKotNet123";
 
 String sDeviceName = "Nano1";
 
 
-UserCmdMngr CmdMngr1;
-RingBuffer RB;// Ring buffer class object в буыер складываем температурные данные, которые потом будет отправлять на веб сервер.
+UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
+RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod;// Wifi class object
 
 boolean flag_NeedSend = false;// есть несохраненные данные
-boolean flag_NeedRefreshData = true;// надо обноалять данные с датчиков
-boolean flag_SendData = false;// есть наддые для отсылки на сервер
+boolean flag_NeedRefreshData   = true;// надо обноалять данные с датчиков
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 
 unsigned int DataRefreshIntervalMs = 60000;//ms
@@ -93,8 +92,6 @@ void loop ()
   if (flag_NeedRefreshData){// пора обновлять температурные данные
     RefreshDataActions();
   }
-  //ReadSerialCmd();
-  flag_SendData = true;
   SendData();
   CmdMngr1.SerialPortLoop();
 }
@@ -112,26 +109,10 @@ void RefreshDataActions()
   LastMillisVal = millis();
 }
 
-void ReadSerialCmd()
-{
-  int i = 0;
-  byte a;
-  while( ExtSerial.available() && i< 99) {
-        a = ExtSerial.read();
-        i++;
-        switch (a){
-          case 1:
-            flag_SendData = true;
-            ExtSerial.println("Cmd ReadData");
-            break;
-        }
-  }
-}
-
 void SendData()
 {
   boolean bSendSuccessful = true;
-  if (!(flag_SendData&&flag_NeedSend))
+  if (!flag_NeedSend)
     return;
   ExtSerial.println("\r\n====SendingData===;");
   while(RB.BufHasData()){
@@ -150,7 +131,6 @@ void SendData()
   ExtSerial.println("====End Data====");
   if (bSendSuccessful){
     flag_NeedSend = false;
-    flag_SendData = false;
   }
 }
 
@@ -300,5 +280,27 @@ String firstZero(int val)
   }
 }
 
+
+
+//======================COMMANDS=====================================
+void ExecuteUserCmdIfNeeded()
+{
+  unsigned char cmd = CmdMngr1.PopLatestParsedCmd();
+  if (cmd>0){
+    switch (cmd){
+      case CMD_I_HELLO:
+        Cmd_Hello();
+        break;
+    }
+  }
+}
+
+
+
+void Cmd_Hello()
+{
+  ExtSerial.println("Hello OK");  
+}
+//====================END Commands===================================
 
 
