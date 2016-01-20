@@ -42,7 +42,7 @@
   ARef
   3v3 out
   D13 (LED)
-  
+
 */
 
 SoftwareSerial ExtSerial(10,11);// debug serial port
@@ -53,10 +53,10 @@ Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
 float lastTemperatureC;
 
-String WifiAP_Name = "KotNet";
-String WifiAP_Pwd  = "MyKotNet123";
+const String WifiAP_Name = "KotNet";
+const String WifiAP_Pwd  = "MyKotNet123";
 
-String sDeviceName = "Nano1";
+const String sDeviceName = "Nano1";
 
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
@@ -67,7 +67,7 @@ boolean flag_NeedSend = false;// есть несохраненные данны�
 boolean flag_NeedRefreshData   = true;// надо обноалять данные с датчиков
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 
-unsigned int DataRefreshIntervalMs = 60000;//ms
+#define DataRefreshIntervalMs  (60000)
 unsigned long LastMillisVal=0;
 
 void setup() {
@@ -77,10 +77,8 @@ void setup() {
   ESPMod.dbgOutputCh = PrintMessageCh;
   ESPMod.dbgOutputChr = PrintMessageChr;
   //RTC.halt(false);
-  ExtSerial.println("Setup");
-  
-  //RTC.setTime(23, 05, 00);    
-  //RTC.setDate(3, 1, 2016);
+  ExtSerial.println(F("Setup"));
+ 
 }
 
 void loop ()
@@ -98,7 +96,7 @@ void loop ()
 
 void RefreshDataActions()
 {
-  ExtSerial.println("Refreshing Data!");
+  ExtSerial.println(F("Refreshing Data!"));
   readDS18B20Scratchpad();
   lastTemperatureC = getTemperatureCelsium();
   setLastRefreshDateTime();
@@ -114,21 +112,21 @@ void SendData()
   boolean bSendSuccessful = true;
   if (!flag_NeedSend)
     return;
-  ExtSerial.println("\r\n====SendingData===;");
+  ExtSerial.println(F("\r\n====SendingData===;"));
   while(RB.BufHasData()){
     SensorData val = RB.popTData();// забираем из буфера данные
     // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
     // отсылаем данные по HTTP
     if (!SendData_Http(val)){
-      ExtSerial.println("Cancel POP data");
+      ExtSerial.println(F("Cancel POP data"));
       RB.CancelPopData();
       bSendSuccessful = false;
       break;
     }
   }
   
-  ExtSerial.println("====End Data====");
+  ExtSerial.println(F("====End Data===="));
   if (bSendSuccessful){
     flag_NeedSend = false;
   }
@@ -164,21 +162,21 @@ void saveTemperatureToRAM()
 }
 
 void PrintOutData(){
-  ExtSerial.print("  Temperature = ");
+  ExtSerial.print(F("  Temperature = "));
   ExtSerial.print(lastTemperatureC);
-  ExtSerial.print(" Celsius,\r\n");
+  ExtSerial.print(F(" Celsius,\r\n"));
   // Send date
   ExtSerial.print(lastRefreshDT.year);
-  ExtSerial.print("-");
+  ExtSerial.print(F("-"));
   ExtSerial.print(lastRefreshDT.mon);
-  ExtSerial.print("-");
+  ExtSerial.print(F("-"));
   ExtSerial.print(lastRefreshDT.date);
-  ExtSerial.print(" -- ");
+  ExtSerial.print(F(" -- "));
   // Send time
   ExtSerial.print(lastRefreshDT.hour);
-  ExtSerial.print(":");
+  ExtSerial.print(F(":"));
   ExtSerial.print(lastRefreshDT.min);
-  ExtSerial.print(":");
+  ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec);
 }
 void readDS18B20Scratchpad()
@@ -228,23 +226,23 @@ float getTemperatureCelsium()
 
 void PrintMessage(String val)
 {
-  ExtSerial.print("Message: <");
+  ExtSerial.print(F("Message: <"));
   ExtSerial.print(val);
-  ExtSerial.println(">");
+  ExtSerial.println(F(">"));
 }
 
 void PrintMessageCh(char val)
 {
-  ExtSerial.print("MessageCh: <");
+  ExtSerial.print(F("MessageCh: <"));
   ExtSerial.print(val);
-  ExtSerial.println(">");
+  ExtSerial.println(F(">"));
 }
 
 void PrintMessageChr(char val[])
 {
-  ExtSerial.print("MessageCh: <");
+  ExtSerial.print(F("MessageCh: <"));
   ExtSerial.print(val);
-  ExtSerial.println(">");
+  ExtSerial.println(F(">"));
 }
 
 void ConfigureESPWifi()
@@ -265,8 +263,8 @@ void ConfigureESPWifi()
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?route=t/commit" + (String)"&devicename=" + sDeviceName + "&celsium="+(String)((int)data.Temperature) + "&date="+(String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
-  ExtSerial.print("Send HttpRequest Url:");
+  String sUrl = "TMon/index.php?route=t/commit&devicename=" + sDeviceName + "&celsium=" + (String)((int)data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
+  ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
   return ESPMod.SendGetRequest(sUrl);
 }
@@ -291,6 +289,12 @@ void ExecuteUserCmdIfNeeded()
       case CMD_I_HELLO:
         Cmd_Hello();
         break;
+      case CMD_I_SETTIME:
+        Cmd_SetDate();
+        break;
+      case CMD_I_GETTIME:
+        Cmd_GetDate();
+        break;    
     }
   }
 }
@@ -299,8 +303,70 @@ void ExecuteUserCmdIfNeeded()
 
 void Cmd_Hello()
 {
-  ExtSerial.println("Hello OK");  
+  ExtSerial.println(F("Hello OK"));  
+}
+
+void Cmd_SetDate()
+{
+ ExtSerial.println(F("Cmd Set Date"));
+ unsigned int value;
+ //unsigned char Month,Day,Hour,Minute,Second;   
+ ExtSerial.println(F("Enter date\time values"));
+ ExtSerial.flush();
+ ExtSerial.println(F("Year:"));
+ lastRefreshDT.year = ReadIntSerial();
+ ExtSerial.println(F("Month:"));
+ lastRefreshDT.mon = ReadIntSerial();
+ ExtSerial.println(F("Day:"));
+ lastRefreshDT.date = ReadIntSerial();
+ ExtSerial.println(F("Hour:"));
+ lastRefreshDT.hour  = ReadIntSerial();
+ ExtSerial.println(F("Minute:"));
+ lastRefreshDT.min = ReadIntSerial();
+ ExtSerial.println(F("Second:"));
+ lastRefreshDT.sec = ReadIntSerial();
+
+ /*if ((lastRefreshDT.year>0)&&
+     (lastRefreshDT.year<3000)&&
+     (lastRefreshDT.mon>0)&&
+     (lastRefreshDT.mon<12)&&
+     (lastRefreshDT.date>0)&&
+     (lastRefreshDT.date<31)&&
+     (lastRefreshDT.hour>0)&&
+     (lastRefreshDT.hour<23)&&
+     (lastRefreshDT.min>0)&&
+     (lastRefreshDT.min<59)&&
+     (lastRefreshDT.sec>0)&&
+     (lastRefreshDT.sec<59)
+    ){*/
+  ExtSerial.println(F("DataEntered OK"));      
+ //}
+}
+
+void Cmd_GetDate()
+{
+  lastRefreshDT = RTC.getTime();
+  ExtSerial.println(F(""));
+  ExtSerial.println(F("Date/Time:"));
+  // Send date
+  ExtSerial.print(lastRefreshDT.year);
+  ExtSerial.print(F("-"));
+  ExtSerial.print(lastRefreshDT.mon);
+  ExtSerial.print(F("-"));
+  ExtSerial.print(lastRefreshDT.date);
+  ExtSerial.print(F(" -- "));
+  // Send time
+  ExtSerial.print(lastRefreshDT.hour);
+  ExtSerial.print(F(":"));
+  ExtSerial.print(lastRefreshDT.min);
+  ExtSerial.print(F(":"));
+  ExtSerial.println(lastRefreshDT.sec); 
 }
 //====================END Commands===================================
 
+int ReadIntSerial()
+{
+  ExtSerial.setTimeout(30000);
+  return ExtSerial.parseInt();
+}
 

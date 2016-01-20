@@ -1,4 +1,4 @@
-#include "UserCmdMngr.h"
+ #include "UserCmdMngr.h"
 
 UserCmdMngr::UserCmdMngr() 
 {
@@ -9,7 +9,6 @@ void UserCmdMngr::Init(SoftwareSerial* pSWSP)
 {
   this->SPort = pSWSP;
 }
-
 
 void UserCmdMngr::SerialPortLoop()
 {
@@ -31,7 +30,7 @@ void UserCmdMngr::SerialPortLoop()
     }
     if (this->bufIndex == bufLen){
       this->bufIndex=0;
-      this->SPort->println("<ERROR>");
+      this->SPort->println(F("<ERROR>"));
       this->SPort->flush();
       return;
     }
@@ -46,7 +45,7 @@ void UserCmdMngr::SerialPortLoop()
                               
     this->lastFoundCmd = this->parseCmdName();
     if (this->lastFoundCmd == 0){
-      this->SPort->println("Error: Unknown command!");  
+      this->SPort->println(F("Error: Unknown command!"));  
     }  
   }
   if(bEOLFound){
