@@ -5,6 +5,7 @@
 #include "RingBuffer.h"
 #include "WebMngr.h"
 #include "UserCmdMngr.h"
+#include "EEPROMMngr.h"
 
 
 /*
@@ -53,7 +54,7 @@ Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
 float lastTemperatureC;
 
-const String WifiAP_Name = "KotNet";
+String WifiAP_Name = "KotNet";
 const String WifiAP_Pwd  = "MyKotNet123";
 
 const String sDeviceName = "Nano1";
@@ -62,6 +63,7 @@ const String sDeviceName = "Nano1";
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod;// Wifi class object
+EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
 boolean flag_NeedRefreshData   = true;// надо обноалять данные с датчиков
@@ -80,6 +82,7 @@ void setup() {
   ESPMod.dbgOutputChr = PrintMessageChr;
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
+  LoadDataFromEEPROM();
  
 }
 
@@ -98,6 +101,14 @@ void loop ()
   }
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
+}
+
+void LoadDataFromEEPROM()
+{
+  String tmp = EEManager.getWifiName();
+  if (tmp.length()>0){
+    WifiAP_Name = tmp;
+  }
 }
 
 void RefreshDataActions()
