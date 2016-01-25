@@ -66,11 +66,13 @@ WebMngr ESPMod;// Wifi class object
 boolean flag_NeedSend = false;// есть несохраненные данные
 boolean flag_NeedRefreshData   = true;// надо обноалять данные с датчиков
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
+boolean flag_runMainProgram = true;
 
 #define DataRefreshIntervalMs  (60000)
 unsigned long LastMillisVal=0;
 
 void setup() {
+  flag_runMainProgram = true;
   CmdMngr1.Init(&ExtSerial);
   ExtSerial.begin(9600);
   ESPMod.dbgOutput = PrintMessage;
@@ -83,15 +85,19 @@ void setup() {
 
 void loop ()
 {
-  if (flag_ESP_NeedConfigure){
-    ConfigureESPWifi();//если необъодимо - переподключаем вайфай
-  }  
-  CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
-  if (flag_NeedRefreshData){// пора обновлять температурные данные
-    RefreshDataActions();
+  if (flag_runMainProgram){
+    if (flag_ESP_NeedConfigure){
+      ConfigureESPWifi();//если необъодимо - переподключаем вайфай
+    }  
+    CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
+  
+    if (flag_NeedRefreshData){// пора обновлять температурные данные
+      RefreshDataActions();
+    }
+    SendData();
   }
-  SendData();
   CmdMngr1.SerialPortLoop();
+  ExecuteUserCmdIfNeeded();
 }
 
 void RefreshDataActions()
@@ -274,7 +280,7 @@ String firstZero(int val)
   if (val<10){
     return "0"+(String)val;  
   }else{
-    return (String)val    ;
+    return (String)val;
   }
 }
 
@@ -294,7 +300,10 @@ void ExecuteUserCmdIfNeeded()
         break;
       case CMD_I_GETTIME:
         Cmd_GetDate();
-        break;    
+        break;
+      case CMD_I_TOGGLE_RUN:
+        Cmd_ToggleRunProgram();
+        break;      
     }
   }
 }
@@ -315,14 +324,19 @@ void Cmd_SetDate()
  ExtSerial.flush();
  ExtSerial.println(F("Year:"));
  lastRefreshDT.year = ReadIntSerial();
+ ExtSerial.flush();
  ExtSerial.println(F("Month:"));
  lastRefreshDT.mon = ReadIntSerial();
+ ExtSerial.flush();
  ExtSerial.println(F("Day:"));
  lastRefreshDT.date = ReadIntSerial();
+ ExtSerial.flush();
  ExtSerial.println(F("Hour:"));
  lastRefreshDT.hour  = ReadIntSerial();
+ ExtSerial.flush();
  ExtSerial.println(F("Minute:"));
  lastRefreshDT.min = ReadIntSerial();
+ ExtSerial.flush();
  ExtSerial.println(F("Second:"));
  lastRefreshDT.sec = ReadIntSerial();
 
@@ -361,6 +375,13 @@ void Cmd_GetDate()
   ExtSerial.print(lastRefreshDT.min);
   ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec); 
+}
+
+void Cmd_ToggleRunProgram()
+{
+  flag_runMainProgram = !flag_runMainProgram;
+  ExtSerial.print (F("Cmd ToggleProgramRun"));
+  ExtSerial.println(flag_runMainProgram);  
 }
 //====================END Commands===================================
 

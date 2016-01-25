@@ -41,7 +41,7 @@ void UserCmdMngr::SerialPortLoop()
       (this->buf[1] == 'M')&&
       (this->buf[2] == 'D')&&
       (this->buf[3] == ':')
-                            ){
+  ){
                               
     this->lastFoundCmd = this->parseCmdName();
     if (this->lastFoundCmd == 0){
@@ -85,9 +85,11 @@ unsigned char UserCmdMngr::parseCmdName()
   // считаем что получилось по поиску
   for (unsigned char k = 0;k<commandsCount;k++ ){
     if (foundState[k]!=ST_OVERFLOW){
+      //this->SPort->print("Command detected");
       return k+1;
     }  
   }
+  //this->SPort->println("Parse failed");
   return 0;
 }
 
@@ -95,6 +97,7 @@ unsigned char UserCmdMngr::PopLatestParsedCmd()
 {
   unsigned char val = this->lastFoundCmd;
   this->lastFoundCmd = 0;
+  return val;
 }
 
 
