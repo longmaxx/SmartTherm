@@ -326,7 +326,13 @@ void ExecuteUserCmdIfNeeded()
         break;
       case CMD_I_TOGGLE_RUN:
         Cmd_ToggleRunProgram();
-        break;      
+        break;
+      case CMD_I_SETWIFI:
+        Cmd_SetWifiPreferences();
+        break; 
+      case CMD_I_SETNAME:
+        Cmd_SetDeviceName();
+        break;           
     }
   }
 }
@@ -406,11 +412,64 @@ void Cmd_ToggleRunProgram()
   ExtSerial.print (F("Cmd ToggleProgramRun"));
   ExtSerial.println(flag_runMainProgram);  
 }
+
+void Cmd_SetWifiPreferences()
+{
+  ExtSerial.println (F("Enter Wifi name"));
+  ExtSerial.flush();
+  String sName = ReadStrSerial();
+
+  ExtSerial.println (F("Enter Wifi Password"));
+  ExtSerial.flush();
+  String sPwd = ReadStrSerial();
+  
+  ExtSerial.print (sName);
+  ExtSerial.print ("/");
+  ExtSerial.println(sPwd);
+  ExtSerial.println (F("Save it?(1/0)"));
+  ExtSerial.flush();
+  int ans = 0;
+  ans = ReadIntSerial();
+  if ( ans == 1){
+    WifiAP_Name = sName;
+    WifiAP_Pwd = sPwd;
+    EEManager.setWifiName(sName);
+    EEManager.setWifiPwd(sPwd);
+    ExtSerial.println(F("OK"));
+  }else{
+    ExtSerial.println(F("Canceled"));
+  }
+}
+
+void Cmd_SetDeviceName()
+{
+  ExtSerial.println(F("Enter device name"));
+  ExtSerial.flush();
+  String sName = ReadStrSerial();
+
+  ExtSerial.println(F("Save it?(1/0)"));
+  ExtSerial.flush();
+  int ans = 0;
+  ans = ReadIntSerial();
+  if ( ans == 1){
+    sDeviceName = sName;
+    EEManager.setDeviceName(sName);
+    ExtSerial.println(F("OK"));
+  }else{
+    ExtSerial.println(F("Canceled"));
+  }
+}
 //====================END Commands===================================
 
 int ReadIntSerial()
 {
   ExtSerial.setTimeout(30000);
   return ExtSerial.parseInt();
+}
+
+String ReadStrSerial()
+{
+  ExtSerial.setTimeout(30000);
+  return ExtSerial.readString();
 }
 
