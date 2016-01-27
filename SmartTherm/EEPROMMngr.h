@@ -15,14 +15,16 @@ class EEPROMMngr{
 
   public:
     String getWifiName();
-    //String getWifiPwd();
-    //String getDeviceName();
+    String getWifiPwd();
+    String getDeviceName();
     //String getTermometerID();
 
     boolean setWifiName(String sWifiName);
-    //boolean setWifiPwd(String sPwd);
-    //boolean setDeviceName(String sDevName);
+    boolean setWifiPwd(String sPwd);
+    boolean setDeviceName(String sDevName);
     //boolean setTermometerID(String ID);
+  private:  String  getStringValue(unsigned char baseAddr,unsigned char maxLen);
+            boolean setStringValue(String sValue,unsigned char baseAddr,unsigned char maxLen)  ;
 };
 
 

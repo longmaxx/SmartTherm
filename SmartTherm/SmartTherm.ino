@@ -55,9 +55,9 @@ byte scratchpad[12];
 float lastTemperatureC;
 
 String WifiAP_Name = "KotNet";
-const String WifiAP_Pwd  = "MyKotNet123";
+String WifiAP_Pwd  = "MyKotNet123";
 
-const String sDeviceName = "Nano1";
+String sDeviceName = "Nano1";
 
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
@@ -108,6 +108,18 @@ void LoadDataFromEEPROM()
   String tmp = EEManager.getWifiName();
   if (tmp.length()>0){
     WifiAP_Name = tmp;
+  }
+  
+  tmp = "";
+  tmp = EEManager.getWifiPwd();
+  if (tmp.length()>0){
+    WifiAP_Pwd = tmp;
+  }
+
+  tmp = "";
+  tmp = EEManager.getDeviceName();
+  if (tmp.length()>0){
+    sDeviceName = tmp;
   }
 }
 
