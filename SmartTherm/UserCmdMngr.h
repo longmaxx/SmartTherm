@@ -4,7 +4,7 @@
   #define USERCMDMNGR_H
 
   #define bufLen        (32)
-  #define commandsCount (7)
+  #define commandsCount (8)
 
   #define CMD_I_HELLO   (1)
   #define CMD_I_SETTIME (2)
@@ -13,12 +13,13 @@
   #define CMD_I_TOGGLE_RUN (5)
   #define CMD_I_SETWIFI (6)
   #define CMD_I_SETNAME (7)
+  #define CMD_I_INFO (8)
 class UserCmdMngr{
   private: unsigned char lastFoundCmd;  
   private: SoftwareSerial* SPort;
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;
-  private: const char* commands[commandsCount] = {"hello","settime","gettime","gettemp","mode","setwifi","setname"};
+  private: const char* commands[commandsCount] = {"hello","settime","gettime","gettemp","mode","setwifi","setname","info"};
   
   public: UserCmdMngr();
   public: void Init(SoftwareSerial* pSWSP);

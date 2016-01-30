@@ -332,7 +332,10 @@ void ExecuteUserCmdIfNeeded()
         break; 
       case CMD_I_SETNAME:
         Cmd_SetDeviceName();
-        break;           
+        break; 
+      case CMD_I_INFO:
+        Cmd_PrintDeviceInfo();
+        break;
     }
   }
 }
@@ -459,17 +462,41 @@ void Cmd_SetDeviceName()
     ExtSerial.println(F("Canceled"));
   }
 }
+
+void Cmd_PrintDeviceInfo()
+{
+  ExtSerial.println(F("<Device info>"));
+  //name
+  ExtSerial.print(F("Device name: "));
+  ExtSerial.println(sDeviceName);
+  //Wifi info
+  ExtSerial.print(F("Wifi AP Name: "));
+  ExtSerial.println(WifiAP_Name);
+  ExtSerial.print(F("Wifi connected: "));
+  ExtSerial.println(BoolToStr(!flag_ESP_NeedConfigure));
+  //Last temperature
+  ExtSerial.print(F("Temperature data: "));
+  ExtSerial.print(lastTemperatureC);
+  ExtSerial.print("C");
+
+  ExtSerial.println(F("\r\nOK"));
+}
 //====================END Commands===================================
 
 int ReadIntSerial()
 {
-  ExtSerial.setTimeout(30000);
+  ExtSerial.setTimeout(15000);
   return ExtSerial.parseInt();
 }
 
 String ReadStrSerial()
 {
-  ExtSerial.setTimeout(30000);
-  return ExtSerial.readString();
+  ExtSerial.setTimeout(15000);
+  return ExtSerial.readStringUntil(0x0A);
+}
+
+String BoolToStr (boolean val)
+{
+  return val ? F("true"): F("false");
 }
 
