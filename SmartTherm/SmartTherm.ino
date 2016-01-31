@@ -54,10 +54,10 @@ Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
 float lastTemperatureC;
 
-String WifiAP_Name = "KotNet";
-String WifiAP_Pwd  = "MyKotNet123";
+String WifiAP_Name;// = "KotNet";
+String WifiAP_Pwd;//  = "MyKotNet123";
 
-String sDeviceName = "Nano1";
+String sDeviceName;// = "Nano1";
 
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
