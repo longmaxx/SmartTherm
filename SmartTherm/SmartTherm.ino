@@ -492,7 +492,7 @@ int ReadIntSerial()
 String ReadStrSerial()
 {
   ExtSerial.setTimeout(15000);
-  return ExtSerial.readStringUntil(0x0A);
+  return ExtSerial.readStringUntil(0x0D);
 }
 
 String BoolToStr (boolean val)
