@@ -292,7 +292,7 @@ void ConfigureESPWifi()
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + "&celsium=" + (String)((int)data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
+  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + "&celsium=" + (String)(data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
   return ESPMod.SendGetRequest(sUrl);
