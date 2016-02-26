@@ -6,24 +6,57 @@ void WebMngr::Setup_Hardware()
   Serial.setTimeout(5000);
 }
 
-bool WebMngr::ConnectWifi(String sNetName,String sPassword)
+bool WebMngr::WifiAPConnected(String sAPName)
 {
-  Serial.println(F("AT+CWMODE=1"));
-  delay(1000);
-  String cmd="AT+CWJAP_CUR=\"";
-  cmd+=sNetName;
-  cmd+="\",\"";
-  cmd+=sPassword;
-  cmd+="\"";
-  Serial.println(cmd);
-  delay(5000);
-  if(Serial.find("OK")){
-    this->dbgOutput(F("OK, Connected to WiFi."));
-    return true;
+  Serial.flush();
+  Serial.println(F("AT+CWJAP_CUR?"));
+  delay(2000);
+  if (Serial.find("\n+CWJAP_CUR:\"")){
+    String curAPName = "";
+    char s = Serial.read();
+    byte i = 0;
+    while ((s!='"')&&(i<10)){
+      curAPName = curAPName + s;
+      s = Serial.read();
+      i++;
+    }
+    if (curAPName != sAPName){
+      this->dbgOutput("Wifi: AP is wrong:"+curAPName);
+      return false;  
+    }
+    
   }else{
-    this->dbgOutput(F("Can not connect to the WiFi."));
+    this->dbgOutput(F("Wifi: NoCmdResponse"));
     return false;
   }
+  this->dbgOutput(F("Wifi: AP is ok"));
+  return true;
+}
+
+bool WebMngr::ConnectWifi(String sNetName,String sPassword)
+{
+  if (!this->WifiAPConnected(sNetName)){
+    this->wifiCmd("AT+CWQAP",5000,"OK");
+    this->wifiCmd("AT+CWMODE=1",2000,"OK");
+    //Serial.println(F("AT+CWMODE=1"));
+    delay(1000);
+    String cmd="AT+CWJAP_CUR=\"";
+    cmd+=sNetName;
+    cmd+="\",\"";
+    cmd+=sPassword;
+    cmd+="\"";
+    Serial.println(cmd);
+    delay(5000);
+    
+    
+    if((Serial.find("WIFI CONNECTED"))&&(Serial.find("WIFI GOT IP")&&(Serial.find("\nOK")))){
+      this->dbgOutput(F("OK, Connected to WiFi."));
+      return true;
+    }else{
+      this->dbgOutput(F("Can not connect to the WiFi."));
+      return false;
+    }
+  }  
 }
 
 bool WebMngr::InternetAccess()
@@ -50,9 +83,10 @@ boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
   Serial.println(cmd);
   //delay(timeout);
   if(Serial.find(answer)) {
+    this->dbgOutput(F("WifiCmd = True"));
     return true;
   } else {
-    //this->dbgOutput(answer);
+    this->dbgOutput(F("WifiCmd = False"));
     //this->dbgOutput("|");
     return false;
   }
@@ -62,7 +96,7 @@ bool WebMngr::SendGetRequest(String sUrl)
 {
   String msgBegin = "GET /";
   String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
-  if(!wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80",2000,"OK")){
+  if(!wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80",5000,"OK")){
     Serial.println("AT+CIPCLOSE");
     return false;
   }

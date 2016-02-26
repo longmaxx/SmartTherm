@@ -83,7 +83,7 @@ void setup() {
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
- 
+  delay(5000);
 }
 
 void loop ()
@@ -151,6 +151,7 @@ void SendData()
       ExtSerial.println(F("Cancel POP data"));
       RB.CancelPopData();
       bSendSuccessful = false;
+      flag_ESP_NeedConfigure = true;
       break;
     }
   }
@@ -278,7 +279,7 @@ void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
   delay(5000);
-  ESPMod.wifiCmd("ATE0",1000,"OK");
+  //ESPMod.wifiCmd("ATE0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
     //ESPMod.ListWifiAPs();
     return;
