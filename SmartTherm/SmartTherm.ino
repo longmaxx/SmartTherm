@@ -88,6 +88,8 @@ void setup() {
 
 void loop ()
 {
+  CmdMngr1.SerialPortLoop();
+  ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
     if (flag_ESP_NeedConfigure){
       ConfigureESPWifi();//если необъодимо - переподключаем вайфай
@@ -99,8 +101,7 @@ void loop ()
     }
     SendData();
   }
-  CmdMngr1.SerialPortLoop();
-  ExecuteUserCmdIfNeeded();
+  
 }
 
 void LoadDataFromEEPROM()
@@ -357,43 +358,49 @@ void Cmd_SetDate()
  ExtSerial.flush();
  ExtSerial.println(F("Year:"));
  lastRefreshDT.year = ReadIntSerial();
+ ExtSerial.println (lastRefreshDT.year);
  ExtSerial.flush();
  ExtSerial.println(F("Month:"));
  lastRefreshDT.mon = ReadIntSerial();
+ ExtSerial.println (lastRefreshDT.mon);
  ExtSerial.flush();
  ExtSerial.println(F("Day:"));
  lastRefreshDT.date = ReadIntSerial();
+ ExtSerial.println (lastRefreshDT.date);
  ExtSerial.flush();
  ExtSerial.println(F("Hour:"));
  lastRefreshDT.hour  = ReadIntSerial();
+ ExtSerial.println (lastRefreshDT.hour);
  ExtSerial.flush();
  ExtSerial.println(F("Minute:"));
  lastRefreshDT.min = ReadIntSerial();
+ ExtSerial.println (lastRefreshDT.min);
  ExtSerial.flush();
  ExtSerial.println(F("Second:"));
  lastRefreshDT.sec = ReadIntSerial();
-
- /*if ((lastRefreshDT.year>0)&&
-     (lastRefreshDT.year<3000)&&
-     (lastRefreshDT.mon>0)&&
-     (lastRefreshDT.mon<12)&&
-     (lastRefreshDT.date>0)&&
-     (lastRefreshDT.date<31)&&
-     (lastRefreshDT.hour>0)&&
-     (lastRefreshDT.hour<23)&&
-     (lastRefreshDT.min>0)&&
-     (lastRefreshDT.min<59)&&
-     (lastRefreshDT.sec>0)&&
-     (lastRefreshDT.sec<59)
-    ){*/
-  ExtSerial.println(F("DataEntered OK"));      
- //}
+ ExtSerial.println (lastRefreshDT.sec);
+ //просим ввести часовой пояс и сохраняем его 
+ ExtSerial.flush();
+ ExtSerial.println(F("TimeZone(+3):"));
+ String sTimeZone = ReadStrSerial();
+ signed char nTimeZone = 255;
+ if ((sTimeZone[0] == '-')){
+  nTimeZone = sTimeZone.substring(1).toInt();   
+  nTimeZone = -nTimeZone;
+ }else{
+  nTimeZone = sTimeZone.toInt();   
+ }
+ RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
+ RTC.setDate(lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
+ Cmd_GetDate();
+ ExtSerial.println(F("End Date Setting"));
+ ExtSerial.println(F("TODO: timeZone save")); 
+ ExtSerial.println(nTimeZone);
 }
 
 void Cmd_GetDate()
 {
   lastRefreshDT = RTC.getTime();
-  ExtSerial.println(F(""));
   ExtSerial.println(F("Date/Time:"));
   // Send date
   ExtSerial.print(lastRefreshDT.year);
