@@ -49,6 +49,7 @@
 SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire ds(12);
 DS1307 RTC(18, 19);
+#define RTC_TIME_ZONE_ADDR (0x08)
 
 Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
@@ -390,11 +391,15 @@ void Cmd_SetDate()
  }else{
   nTimeZone = sTimeZone.toInt();   
  }
+ if (nTimeZone != 255){
+  RTC.poke(RTC_TIME_ZONE_ADDR,nTimeZone);
+  ExtSerial.print("savedZone:");
+  ExtSerial.println((signed char)RTC.peek(RTC_TIME_ZONE_ADDR));
+ }
  RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
  RTC.setDate(lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
  Cmd_GetDate();
  ExtSerial.println(F("End Date Setting"));
- ExtSerial.println(F("TODO: timeZone save")); 
  ExtSerial.println(nTimeZone);
 }
 
