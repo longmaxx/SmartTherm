@@ -36,8 +36,8 @@ bool WebMngr::WifiAPConnected(String sAPName)
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
   if (!this->WifiAPConnected(sNetName)){
-    this->wifiCmd("AT+CWQAP",5000,"OK");
-    this->wifiCmd("AT+CWMODE=1",2000,"OK");
+    this->ATCmd(F("AT+CWQAP"),5000,sOK);
+    this->ATCmd(F("AT+CWMODE=1"),2000,sOK);
     //Serial.println(F("AT+CWMODE=1"));
     delay(1000);
     String cmd="AT+CWJAP_CUR=\"";
@@ -61,24 +61,21 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 
 bool WebMngr::InternetAccess()
 {
-  Serial.flush();
-  Serial.println( 'AT+PING="ya.ru"' );
-  delay(2000);
-  if(Serial.find("OK")){
-    this->dbgOutput("OK, Ping internet.");
+  if(ATCmd(F("AT+PING=\"ya.ru\""),5000,sOK)){
+    this->dbgOutput(F("OK, Ping internet."));
     return true;
   }else{
-    this->dbgOutput("Fail ping internet.");
+    this->dbgOutput(F("Fail ping internet."));
     return false;
   }
 }
 
-boolean WebMngr::ListWifiAPs(){
-  return this->wifiCmd("AT+CWLAP",5000,"OK");
-}
+//boolean WebMngr::ListWifiAPs(){
+//  return this->ATCmd(F("AT+CWLAP"),5000,sOK);
+//}
 
-boolean  WebMngr::wifiCmd(char cmd[], int timeout, char answer[]) {
-  //this->dbgOutput(cmd);
+boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
+{
   Serial.flush();
   Serial.println(cmd);
   //delay(timeout);
@@ -96,12 +93,12 @@ bool WebMngr::SendGetRequest(String sUrl)
 {
   String msgBegin = "GET /";
   String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
-  if(!wifiCmd("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80",5000,"OK")){
-    Serial.println("AT+CIPCLOSE");
+  if(!ATCmd(F("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80"),5000,sOK)){
+    Serial.println(F("AT+CIPCLOSE"));
     return false;
   }
   Serial.flush();
-  Serial.print("AT+CIPSEND=");
+  Serial.print(F("AT+CIPSEND="));
   Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
   boolean res= false;
   delay(5000);
@@ -114,9 +111,8 @@ bool WebMngr::SendGetRequest(String sUrl)
     this->WaitStrSerial("CLOSED",15000);
     Serial.flush();
   }  
-  //Serial.println("aftersend\r\n");
   Serial.flush();
-  Serial.println("AT+CIPCLOSE\r\n");
+  Serial.println(F("AT+CIPCLOSE\r\n"));
   delay(2000);
   Serial.flush();
   return res;
