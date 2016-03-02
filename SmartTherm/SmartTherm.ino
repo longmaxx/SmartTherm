@@ -59,7 +59,7 @@ String WifiAP_Name;// = "KotNet";
 String WifiAP_Pwd;//  = "MyKotNet123";
 
 String sDeviceName;// = "Nano1";
-
+signed char nTimeZone = 0;
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
@@ -84,6 +84,7 @@ void setup() {
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
+  LoadTimeZoneValue();
   //delay(5000);
 }
 
@@ -123,6 +124,10 @@ void LoadDataFromEEPROM()
   if (tmp.length()>0){
     sDeviceName = tmp;
   }
+}
+
+void LoadTimeZoneValue(){
+  nTimeZone = RTC.peek(RTC_TIME_ZONE_ADDR);
 }
 
 void RefreshDataActions()
@@ -293,7 +298,7 @@ void ConfigureESPWifi()
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + "&celsium=" + (String)(data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);
+  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + "&celsium=" + (String)(data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) + "TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
   return ESPMod.SendGetRequest(sUrl);
@@ -414,6 +419,8 @@ void Cmd_GetDate()
   ExtSerial.print(lastRefreshDT.min);
   ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec); 
+  ExtSerial.print(F("TZ"));
+  ExtSerial.print(nTimeZone);
 }
 
 void Cmd_ToggleRunProgram()
