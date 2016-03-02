@@ -10,6 +10,5 @@ class SensorData {
     
     Time Timestamp;
     float Temperature;// celsium
-  
 };
 

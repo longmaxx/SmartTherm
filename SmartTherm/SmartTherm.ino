@@ -84,7 +84,7 @@ void setup() {
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
-  delay(5000);
+  //delay(5000);
 }
 
 void loop ()
@@ -111,7 +111,7 @@ void LoadDataFromEEPROM()
   if (tmp.length()>0){
     WifiAP_Name = tmp;
   }
-  
+
   tmp = "";
   tmp = EEManager.getWifiPwd();
   if (tmp.length()>0){
@@ -184,8 +184,7 @@ void setLastRefreshDateTime()
 }
 
 
-void saveTemperatureToRAM()
-{
+void saveTemperatureToRAM(){
   //реализация кольцевого буфера для хранения температурных данных в RAM  
   SensorData dt;
   dt.Timestamp = lastRefreshDT;
@@ -211,8 +210,7 @@ void PrintOutData(){
   ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec);
 }
-void readDS18B20Scratchpad()
-{
+void readDS18B20Scratchpad(){
   byte i;
   ds.reset();
   ds.write(0xCC);//skip rom
@@ -310,8 +308,6 @@ String firstZero(int val)
   }
 }
 
-
-
 //======================COMMANDS=====================================
 void ExecuteUserCmdIfNeeded()
 {
@@ -342,8 +338,6 @@ void ExecuteUserCmdIfNeeded()
     }
   }
 }
-
-
 
 void Cmd_Hello()
 {

@@ -10,7 +10,6 @@ bool WebMngr::WifiAPConnected(String sAPName)
 {
   Serial.flush();
   Serial.println(F("AT+CWJAP_CUR?"));
-  delay(2000);
   if (Serial.find("\n+CWJAP_CUR:\"")){
     String curAPName = "";
     char s = Serial.read();
@@ -36,10 +35,8 @@ bool WebMngr::WifiAPConnected(String sAPName)
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
   if (!this->WifiAPConnected(sNetName)){
-    this->ATCmd(F("AT+CWQAP"),5000,sOK);
-    this->ATCmd(F("AT+CWMODE=1"),2000,sOK);
-    //Serial.println(F("AT+CWMODE=1"));
-    delay(1000);
+    this->ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
+    this->ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
     String cmd="AT+CWJAP_CUR=\"";
     cmd+=sNetName;
     cmd+="\",\"";
@@ -48,27 +45,26 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
     Serial.println(cmd);
     delay(5000);
     
-    
     if((Serial.find("WIFI CONNECTED"))&&(Serial.find("WIFI GOT IP")&&(Serial.find("\nOK")))){
       this->dbgOutput(F("OK, Connected to WiFi."));
       return true;
     }else{
-      this->dbgOutput(F("Can not connect to the WiFi."));
+      this->dbgOutput(F("Can not connect to WiFi."));
       return false;
     }
   }  
 }
 
-bool WebMngr::InternetAccess()
-{
-  if(ATCmd(F("AT+PING=\"ya.ru\""),5000,sOK)){
-    this->dbgOutput(F("OK, Ping internet."));
-    return true;
-  }else{
-    this->dbgOutput(F("Fail ping internet."));
-    return false;
-  }
-}
+//bool WebMngr::InternetAccess()
+//{
+//  if(ATCmd(F("AT+PING=\"ya.ru\""),5000,sOK)){
+//    this->dbgOutput(F("OK, Ping internet."));
+//    return true;
+//  }else{
+//    this->dbgOutput(F("Fail ping internet."));
+//    return false;
+//  }
+//}
 
 //boolean WebMngr::ListWifiAPs(){
 //  return this->ATCmd(F("AT+CWLAP"),5000,sOK);
@@ -101,7 +97,7 @@ bool WebMngr::SendGetRequest(String sUrl)
   Serial.print(F("AT+CIPSEND="));
   Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
   boolean res= false;
-  delay(5000);
+  //delay(5000);
   if(this->WaitStrSerial(">",5000)) {
     Serial.print(msgBegin);
     Serial.print(sUrl);
@@ -109,8 +105,7 @@ bool WebMngr::SendGetRequest(String sUrl)
     Serial.print(msgEnd);
     res = this->WaitStrSerial("success",5000);
     this->WaitStrSerial("CLOSED",15000);
-    Serial.flush();
-  }  
+   }  
   Serial.flush();
   Serial.println(F("AT+CIPCLOSE\r\n"));
   delay(2000);
@@ -122,11 +117,10 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
 {
   //unsigned long millis1 = millis();
   unsigned long end1 = millis()+(unsigned long)timeout;// possibletroubles with millis overflow
-  unsigned long notExpired = true;
+  bool notExpired = true;
   unsigned char index = 0;
   unsigned char maxIndex = strlen (strEtalon);
   char a;
-  //this->dbgOutput( String(maxIndex));
   while (notExpired){
     while (Serial.available()>0){
       a = Serial.read();
@@ -143,12 +137,7 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
     }
     notExpired = (end1>millis());
   }
-//   unsigned long millis2 = millis();
-   this->dbgOutputChr("WaitStrSerial_false");
-//   char buf[10];
-//   this->dbgOutputChr(ltoa(millis1, buf, 10));
-// /  this->dbgOutputChr(ltoa(millis2, buf, 10));
-//   this->dbgOutputChr(ltoa(end1, buf, 10));
+  this->dbgOutputChr("WaitStrSerial_false");
   return false;
 }
 

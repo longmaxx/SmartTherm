@@ -14,7 +14,7 @@ class WebMngr{
   bool WifiAPConnected(String sAPName);
   bool ConnectWifi(String sNetName,String sPassword);
   bool SendGetRequest(String sUrl);
-  bool InternetAccess();
+  //bool InternetAccess();
   boolean  ATCmd(String cmd, int timeout, char answer[]);
 
   private: bool WaitStrSerial(char strEtalon[],int timeout);

@@ -2,7 +2,6 @@
 
 UserCmdMngr::UserCmdMngr() 
 {
-  
 }
 
 void UserCmdMngr::Init(SoftwareSerial* pSWSP)
@@ -28,7 +27,7 @@ void UserCmdMngr::SerialPortLoop()
         this->buf[this->bufIndex++]=curByte;
       }  
     }
-    if (this->bufIndex == bufLen){
+    if (this->bufIndex == bufLen){// переполнение буфера ожидания команд
       this->bufIndex=0;
       this->SPort->println(F("<ERROR>"));
       this->SPort->flush();
@@ -55,38 +54,34 @@ void UserCmdMngr::SerialPortLoop()
 
 unsigned char UserCmdMngr::parseCmdName()
 {
-  #define ST_NOTFOUND (0)
-  #define ST_OVERFLOW (-2)
- 
+  #define ST_NEVERFOUND (0)
+  #define ST_NOTMATCH (-2)
   #define CMD_BUF_BASE (4)
   
   signed char foundState[commandsCount];
   for (unsigned char k = 0;k<commandsCount;k++ ){
-    foundState[k]=0;// init values
+    foundState[k]=ST_NEVERFOUND;// init values
   }
   for (unsigned char i=CMD_BUF_BASE;i<this->bufIndex;i++){
     //TODO
     // пробегаем по массиву команд и смотрим не совпадает ли байт с текущим
     for (unsigned char c = 0;c<commandsCount;c++){
-     //const char* cmd_name= this->commands[c];
      
-      if (foundState[c] != ST_OVERFLOW){
+      if (foundState[c] != ST_NOTMATCH){
         if (this->commands[c][i-CMD_BUF_BASE] == this->buf[i]){
           //байт совпал
           foundState[c]++;
-        //}else if (cmd_name[c][i-CMD_BUF_BASE] == '\0'){
-        //  foundState[c] = ST_OVERFLOW;
         }else {
-          foundState[c] = ST_OVERFLOW;
+          foundState[c] = ST_NOTMATCH;
         }
       }  
     }
   }
   // считаем что получилось по поиску
   for (unsigned char k = 0;k<commandsCount;k++ ){
-    if (foundState[k]!=ST_OVERFLOW){
+    if (foundState[k]!=ST_NOTMATCH){
       //this->SPort->print("Command detected");
-      return k+1;
+      return k+1;// zero mean not found, so begin count from 1
     }  
   }
   //this->SPort->println("Parse failed");

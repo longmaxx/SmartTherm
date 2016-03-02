@@ -20,12 +20,12 @@ class UserCmdMngr{
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;
   private: const char* commands[commandsCount] = {"hello",
-                                                  "settime",
-                                                  "gettime",
-                                                  "gettemp",
+                                                  "timeset",
+                                                  "timeget",
+                                                  "tempget",
                                                   "mode",
-                                                  "setwifi",
-                                                  "setname",
+                                                  "wifiset",
+                                                  "nameset",
                                                   "info",
                                                  };
   
