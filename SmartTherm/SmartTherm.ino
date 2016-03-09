@@ -55,11 +55,11 @@ Time lastRefreshDT;// время последнего снятия данных
 byte scratchpad[12];
 float lastTemperatureC;
 
-String WifiAP_Name;// = "KotNet";
-String WifiAP_Pwd;//  = "MyKotNet123";
+String WifiAP_Name;
+String WifiAP_Pwd;
 
 String sDeviceName;// = "Nano1";
-signed char nTimeZone = 0;
+signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
@@ -67,7 +67,7 @@ WebMngr ESPMod;// Wifi class object
 EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
-boolean flag_NeedRefreshData   = true;// надо обноалять данные с датчиков
+boolean flag_NeedRefreshData   = true;// пора обновлять данные с датчиков
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 boolean flag_runMainProgram = true;
 
@@ -85,6 +85,7 @@ void setup() {
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
+  setTemperatureResolution();
   //delay(5000);
 }
 
@@ -215,13 +216,23 @@ void PrintOutData(){
   ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec);
 }
+
+void setTemperatureResolution()
+{
+    ds.reset();
+    ds.write(0xCC); // skip ROM
+    ds.write(0x4E);///write scratchpad
+    ds.write(0x00);//TH
+    ds.write(0x00);//TL
+    ds.write(0b01011111);//prefs
+}
 void readDS18B20Scratchpad(){
   byte i;
   ds.reset();
-  ds.write(0xCC);//skip rom
+  ds.write(0xCC);
   //ds.reset();
   ds.write(0x44); // start conversion
-  delay(1000);     // maybe 750ms is enough, maybe not
+  delay(400);     // wait conversion
   // we might do a ds.depower() here, but the reset will take care of it.
    
   ds.reset();
@@ -283,7 +294,8 @@ void PrintMessageChr(char val[])
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
-  delay(5000);
+  //delay(5000);
+  Serial.find("ready");
   //ESPMod.wifiCmd("ATE0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
     //ESPMod.ListWifiAPs();
