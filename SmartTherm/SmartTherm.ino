@@ -79,8 +79,8 @@ void setup() {
   CmdMngr1.Init(&ExtSerial);
   ExtSerial.begin(9600);
   ESPMod.dbgOutput = PrintMessage;
-  ESPMod.dbgOutputCh = PrintMessageCh;
-  ESPMod.dbgOutputChr = PrintMessageChr;
+  //ESPMod.dbgOutputCh = PrintMessageCh;
+  //ESPMod.dbgOutputChr = PrintMessageChr;
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();

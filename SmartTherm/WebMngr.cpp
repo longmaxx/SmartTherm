@@ -76,10 +76,10 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
   Serial.println(cmd);
   //delay(timeout);
   if(Serial.find(answer)) {
-    this->dbgOutput(F("WifiCmd = True"));
+    //this->dbgOutput(F("WifiCmd = True"));
     return true;
   } else {
-    this->dbgOutput(F("WifiCmd = False"));
+    //this->dbgOutput(F("WifiCmd = False"));
     //this->dbgOutput("|");
     return false;
   }
@@ -130,14 +130,14 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
         index = 0;
       }
       if (index == (maxIndex)){
-         this->dbgOutputChr("WaitStrSerial_true");
+         this->dbgOutput(F("WaitStrSerial_true"));
         return true;
       }
       a='\0';
     }
     notExpired = (end1>millis());
   }
-  this->dbgOutputChr("WaitStrSerial_false");
+  this->dbgOutput(F("WaitStrSerial_false"));
   return false;
 }
 
