@@ -1,3 +1,4 @@
+#include <PCD8544.h>
 #include <DS1307.h>
 #include <OneWire.h>
 #include <SoftwareSerial.h>
@@ -45,7 +46,7 @@
   D13 (LED)
 
 */
-
+PCD8544 lcd(7,6,5,3,4);
 SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire ds(12);
 DS1307 RTC(18, 19);
@@ -75,6 +76,8 @@ boolean flag_runMainProgram = true;
 unsigned long LastMillisVal=0;
 
 void setup() {
+  lcd.begin();
+  lcd.clear();
   flag_runMainProgram = true;
   CmdMngr1.Init(&ExtSerial);
   ExtSerial.begin(9600);
@@ -91,6 +94,7 @@ void setup() {
 
 void loop ()
 {
+  
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
