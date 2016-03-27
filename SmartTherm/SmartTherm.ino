@@ -1,7 +1,8 @@
-#include <PCD8544.h>
+
 #include <DS1307.h>
 #include <OneWire.h>
 #include <SoftwareSerial.h>
+#include "LCDMngr.cpp"
 #include "SensorData.h"
 #include "RingBuffer.h"
 #include "WebMngr.h"
@@ -44,9 +45,9 @@
   ARef
   3v3 out
   D13 (LED)
-
 */
-PCD8544 lcd(7,6,5,3,4);
+
+LCDMngr lcd(7,6,5,3,4);
 SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire ds(12);
 DS1307 RTC(18, 19);
@@ -77,7 +78,7 @@ unsigned long LastMillisVal=0;
 
 void setup() {
   lcd.begin();
-  lcd.clear();
+  //lcd.clear();
   flag_runMainProgram = true;
   CmdMngr1.Init(&ExtSerial);
   ExtSerial.begin(9600);
@@ -94,7 +95,7 @@ void setup() {
 
 void loop ()
 {
-  
+  DrawLCD();
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
@@ -110,6 +111,16 @@ void loop ()
   }
   
 }
+
+void DrawLCD()
+{
+  lcd.setCursor(10,0);
+  lcd.writeStr(F("LastTemp"));
+  lcd.setCursor(10,1);
+  lcd.writeStr((String)lastTemperatureC);
+
+}
+
 
 void LoadDataFromEEPROM()
 {
