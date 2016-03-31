@@ -71,6 +71,7 @@ EEPROMMngr EEManager;// EEPROM actions
 boolean flag_NeedSend = false;// есть несохраненные данные
 boolean flag_NeedRefreshData   = true;// пора обновлять данные с датчиков
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
+boolean flag_ESP_Wifi_Connected = false;// проверяется в главном цикле 
 boolean flag_runMainProgram = true;
 
 #define DataRefreshIntervalMs  (60000)
@@ -107,18 +108,35 @@ void loop ()
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
     }
-    SendData();
+    if (!flag_ESP_NeedConfigure){
+      SendData();
+    }
   }
-  
 }
 
 void DrawLCD()
 {
-  lcd.setCursor(10,0);
-  lcd.writeStr(F("LastTemp"));
-  lcd.setCursor(10,1);
+  // Wifi status
+  lcd.setCursor(0,0);
+  lcd.writeStr(F("WiFi: "));
+  if (flag_ESP_Wifi_Connected){
+    lcd.writeStr(F("OK"));
+  }else{
+    lcd.writeStr(F("Fail"));
+  }
+  //LastTemperature
+  lcd.setCursor(0,1);
+  lcd.writeStr(F("LastTemp:"));
   lcd.writeStr((String)lastTemperatureC);
-
+  //Time
+  lcd.setCursor(0,2);
+  lcd.writeStr(F("Time:"));
+  lcd.writeStr(RTC.getTimeStr());
+  lcd.setCursor(0,3);
+  lcd.writeStr(RTC.getDateStr());
+  //Time
+  lcd.setCursor(0,4);
+  lcd.writeStr(WifiAP_Name);
 }
 
 
@@ -320,6 +338,7 @@ void ConfigureESPWifi()
   //if (!ESPMod.InternetAccess()){
   //  return;
  // }
+  flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
   flag_ESP_NeedConfigure = false;
 }
 
@@ -382,48 +401,54 @@ void Cmd_SetDate()
  unsigned int value;
  //unsigned char Month,Day,Hour,Minute,Second;   
  ExtSerial.println(F("Enter date\time values"));
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Year:"));
+ ExtSerialClear();
  lastRefreshDT.year = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.year);
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Month:"));
+ ExtSerialClear();
  lastRefreshDT.mon = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.mon);
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Day:"));
+ ExtSerialClear();
  lastRefreshDT.date = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.date);
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Hour:"));
+ ExtSerialClear();
  lastRefreshDT.hour  = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.hour);
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Minute:"));
+ ExtSerialClear();
  lastRefreshDT.min = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.min);
- ExtSerial.flush();
+ 
  ExtSerial.println(F("Second:"));
+ ExtSerialClear();
  lastRefreshDT.sec = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.sec);
+ 
  //просим ввести часовой пояс и сохраняем его 
- ExtSerial.flush();
  ExtSerial.println(F("TimeZone(+3):"));
  String sTimeZone = ReadStrSerial();
  signed char nTimeZone = 255;
- if ((sTimeZone[0] == '-')){
+ if ((sTimeZone.charAt(0) == '-')){
   nTimeZone = sTimeZone.substring(1).toInt();   
   nTimeZone = -nTimeZone;
  }else{
-  nTimeZone = sTimeZone.toInt();   
+  nTimeZone = sTimeZone.substring(1).toInt();   
  }
  if (nTimeZone != 255){
   RTC.poke(RTC_TIME_ZONE_ADDR,nTimeZone);
-  ExtSerial.print("savedZone:");
+  ExtSerial.print(F("savedZone:"));
   ExtSerial.println((signed char)RTC.peek(RTC_TIME_ZONE_ADDR));
  }
  RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
- RTC.setDate(lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
+ RTC.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
  Cmd_GetDate();
  ExtSerial.println(F("End Date Setting"));
  ExtSerial.println(nTimeZone);
@@ -460,21 +485,21 @@ void Cmd_ToggleRunProgram()
 void Cmd_SetWifiPreferences()
 {
   ExtSerial.println (F("Enter Wifi name"));
-  ExtSerial.flush();
+  ExtSerialClear();
   String sName = ReadStrSerial();
 
   ExtSerial.println (F("Enter Wifi Password"));
-  ExtSerial.flush();
+  ExtSerialClear();
   String sPwd = ReadStrSerial();
   
   ExtSerial.print (sName);
   ExtSerial.print ("/");
   ExtSerial.println(sPwd);
-  ExtSerial.println (F("Save it?(1/0)"));
-  ExtSerial.flush();
-  int ans = 0;
-  ans = ReadIntSerial();
-  if ( ans == 1){
+  ExtSerial.println (F("Save it?(y/n)"));
+  ExtSerialClear();
+  String ans = "n";
+  ans = ReadStrSerial();
+  if ( ans == "y"){
     WifiAP_Name = sName;
     WifiAP_Pwd = sPwd;
     EEManager.setWifiName(sName);
@@ -482,17 +507,27 @@ void Cmd_SetWifiPreferences()
     ExtSerial.println(F("OK"));
   }else{
     ExtSerial.println(F("Canceled"));
+    ExtSerial.println(ans);
   }
 }
+
+//String TrimStr(String str)// обрезает чушь в начале строки. которая почему-то вылезает иногда
+//{
+//  ExtSerial.println(str.charAt(0));
+//  if (str.charAt(0) == 0xFF){
+//    return str.substring(1);
+//  }
+//  return str;
+//}
 
 void Cmd_SetDeviceName()
 {
   ExtSerial.println(F("Enter device name"));
-  ExtSerial.flush();
+  ExtSerialClear();
   String sName = ReadStrSerial();
 
   ExtSerial.println(F("Save it?(1/0)"));
-  ExtSerial.flush();
+  ExtSerialClear();
   int ans = 0;
   ans = ReadIntSerial();
   if ( ans == 1){
@@ -524,16 +559,23 @@ void Cmd_PrintDeviceInfo()
 }
 //====================END Commands===================================
 
+void ExtSerialClear()
+{
+  ExtSerial.flush();
+  ExtSerial.read();
+}
+
 int ReadIntSerial()
 {
   ExtSerial.setTimeout(15000);
-  return ExtSerial.parseInt();
+  //return ExtSerial.parseInt();
+  return ExtSerial.readStringUntil('\r').toInt();
 }
 
 String ReadStrSerial()
 {
   ExtSerial.setTimeout(15000);
-  return ExtSerial.readStringUntil(0x0D);
+  return ExtSerial.readStringUntil('\r');
 }
 
 String BoolToStr (boolean val)
