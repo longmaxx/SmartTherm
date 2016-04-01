@@ -139,7 +139,6 @@ void DrawLCD()
   lcd.writeStr(WifiAP_Name);
 }
 
-
 void LoadDataFromEEPROM()
 {
   String tmp = EEManager.getWifiName();
@@ -327,17 +326,12 @@ void PrintMessageChr(char val[])
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
-  //delay(5000);
   Serial.find("ready");
   //ESPMod.wifiCmd("ATE0",1000,"OK");
   if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-    //ESPMod.ListWifiAPs();
+    ExtSerial.println(F("ConfigureESPWifi:Fail"));
     return;
   }  
-  //проверяем пинг
-  //if (!ESPMod.InternetAccess()){
-  //  return;
- // }
   flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
   flag_ESP_NeedConfigure = false;
 }
@@ -511,21 +505,11 @@ void Cmd_SetWifiPreferences()
   }
 }
 
-//String TrimStr(String str)// обрезает чушь в начале строки. которая почему-то вылезает иногда
-//{
-//  ExtSerial.println(str.charAt(0));
-//  if (str.charAt(0) == 0xFF){
-//    return str.substring(1);
-//  }
-//  return str;
-//}
-
 void Cmd_SetDeviceName()
 {
   ExtSerial.println(F("Enter device name"));
   ExtSerialClear();
   String sName = ReadStrSerial();
-
   ExtSerial.println(F("Save it?(1/0)"));
   ExtSerialClear();
   int ans = 0;
@@ -533,7 +517,8 @@ void Cmd_SetDeviceName()
   if ( ans == 1){
     sDeviceName = sName;
     EEManager.setDeviceName(sName);
-    ExtSerial.println(F("OK"));
+    ExtSerial.println(F("OK "));
+    ExtSerial.println(sDeviceName);
   }else{
     ExtSerial.println(F("Canceled"));
   }

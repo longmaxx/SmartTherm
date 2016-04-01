@@ -46,10 +46,10 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
     delay(5000);
     
     if((Serial.find("WIFI CONNECTED"))&&(Serial.find("WIFI GOT IP")&&(Serial.find("\nOK")))){
-      this->dbgOutput(F("OK, Connected to WiFi."));
+      this->dbgOutput(F("ConnectWifi: OK"));
       return true;
     }else{
-      this->dbgOutput(F("Can not connect to WiFi."));
+      this->dbgOutput(F("ConnectWifi: Fail "));
       return false;
     }
   }  
