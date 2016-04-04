@@ -95,4 +95,13 @@ unsigned char UserCmdMngr::PopLatestParsedCmd()
   return val;
 }
 
+void UserCmdMngr::PrintAvailableCommands()
+{
+  for (unsigned char i=0;i<commandsCount;i++)
+  {
+    this->SPort->println(this->commands[i]);
+  }
+}
+
+
 

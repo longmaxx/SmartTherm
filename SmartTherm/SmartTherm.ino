@@ -18,11 +18,11 @@
   Reset
   Gnd
   D2
-  D3
-  D4
-  D5
-  D6
-  D7
+  D3 - LCD
+  D4 - LCD
+  D5 - LCD
+  D6 - LCD
+  D7 - LCD
   D8
   D9
   D10   - ExtSerial
@@ -116,6 +116,12 @@ void loop ()
 
 void DrawLCD()
 {
+  DrawLCD_Screen1();
+}
+
+
+void DrawLCD_Screen1()
+{
   // Wifi status
   lcd.setCursor(0,0);
   lcd.writeStr(F("WiFi: "));
@@ -138,6 +144,7 @@ void DrawLCD()
   lcd.setCursor(0,4);
   lcd.writeStr(WifiAP_Name);
 }
+
 
 void LoadDataFromEEPROM()
 {
@@ -380,8 +387,15 @@ void ExecuteUserCmdIfNeeded()
       case CMD_I_INFO:
         Cmd_PrintDeviceInfo();
         break;
+      case CMD_I_HELP:
+        Cmd_PrintHelp();  
     }
   }
+}
+
+void Cmd_PrintHelp()
+{
+  CmdMngr1.PrintAvailableCommands();
 }
 
 void Cmd_Hello()
@@ -510,6 +524,7 @@ void Cmd_SetDeviceName()
   ExtSerial.println(F("Enter device name"));
   ExtSerialClear();
   String sName = ReadStrSerial();
+
   ExtSerial.println(F("Save it?(1/0)"));
   ExtSerialClear();
   int ans = 0;
@@ -517,7 +532,7 @@ void Cmd_SetDeviceName()
   if ( ans == 1){
     sDeviceName = sName;
     EEManager.setDeviceName(sName);
-    ExtSerial.println(F("OK "));
+    ExtSerial.println(F("OK"));
     ExtSerial.println(sDeviceName);
   }else{
     ExtSerial.println(F("Canceled"));

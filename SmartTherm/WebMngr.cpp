@@ -52,7 +52,8 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
       this->dbgOutput(F("ConnectWifi: Fail "));
       return false;
     }
-  }  
+  }
+  return true;  
 }
 
 //bool WebMngr::InternetAccess()
