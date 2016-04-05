@@ -395,6 +395,7 @@ void ExecuteUserCmdIfNeeded()
 
 void Cmd_PrintHelp()
 {
+  ExtSerial.println(F("Available commands:"));
   CmdMngr1.PrintAvailableCommands();
 }
 
