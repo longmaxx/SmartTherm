@@ -116,6 +116,7 @@ void loop ()
 
 void DrawLCD()
 {
+  lcd.clear();
   DrawLCD_Screen1();
 }
 
@@ -333,12 +334,14 @@ void PrintMessageChr(char val[])
 void ConfigureESPWifi()
 {
   ESPMod.Setup_Hardware();
-  Serial.find("ready");
+  //Serial.find("ready");
   //ESPMod.wifiCmd("ATE0",1000,"OK");
-  if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-    ExtSerial.println(F("ConfigureESPWifi:Fail"));
-    return;
-  }  
+  if (!ESPMod.WifiAPConnected(WifiAP_Name)){
+    if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
+      ExtSerial.println(F("ConfigureESPWifi:Fail"));
+      return;
+    }
+  }    
   flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
   flag_ESP_NeedConfigure = false;
 }
@@ -444,23 +447,25 @@ void Cmd_SetDate()
  //просим ввести часовой пояс и сохраняем его 
  ExtSerial.println(F("TimeZone(+3):"));
  String sTimeZone = ReadStrSerial();
- signed char nTimeZone = 255;
+ signed char nTZ = 255;
  if ((sTimeZone.charAt(0) == '-')){
-  nTimeZone = sTimeZone.substring(1).toInt();   
-  nTimeZone = -nTimeZone;
+  nTZ = sTimeZone.substring(1).toInt();   
+  nTZ = -nTZ;
  }else{
-  nTimeZone = sTimeZone.substring(1).toInt();   
+  nTZ = sTimeZone.substring(1).toInt();   
  }
- if (nTimeZone != 255){
-  RTC.poke(RTC_TIME_ZONE_ADDR,nTimeZone);
+ if (nTZ != 255){
+  RTC.poke(RTC_TIME_ZONE_ADDR,nTZ);
   ExtSerial.print(F("savedZone:"));
   ExtSerial.println((signed char)RTC.peek(RTC_TIME_ZONE_ADDR));
+  LoadDataFromEEPROM();
  }
+ 
  RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
  RTC.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
  Cmd_GetDate();
  ExtSerial.println(F("End Date Setting"));
- ExtSerial.println(nTimeZone);
+ //ExtSerial.println(nTimeZone);
 }
 
 void Cmd_GetDate()
