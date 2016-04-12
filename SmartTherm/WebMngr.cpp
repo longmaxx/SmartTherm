@@ -13,15 +13,15 @@ bool WebMngr::WifiAPConnected(String sAPName)
   if (Serial.find("\n+CWJAP_CUR:\"")){
     String curAPName = Serial.readStringUntil('"');
     if (curAPName != sAPName){
-      this->dbgOutput("Wifi: AP is wrong:"+curAPName);
+      this->dbgOutput("WifiAPConnected: AP is wrong:"+curAPName);
       return false;  
     }
     
   }else{
-    this->dbgOutput(F("Wifi: NoCmdResponse"));
+    this->dbgOutput(F("WifiAPConnected: NoCmdResponse"));
     return false;
   }
-  this->dbgOutput(F("Wifi: AP is ok"));
+  this->dbgOutput(F("WifiAPConnected: AP is ok"));
   return true;
 }
 
@@ -42,7 +42,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
       this->dbgOutput(F("ConnectWifi: OK"));
       return true;
     }else{
-      this->dbgOutput(F("ConnectWifi: Fail "));
+      this->dbgOutput(F("ConnectWifi: Fail"));
       return false;
     }
   }
