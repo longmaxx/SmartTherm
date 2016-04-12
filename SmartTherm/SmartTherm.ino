@@ -96,7 +96,7 @@ void setup() {
 
 void loop ()
 {
-  DrawLCD();
+  
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
@@ -107,6 +107,7 @@ void loop ()
   
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
+      DrawLCD();
     }
     if (!flag_ESP_NeedConfigure){
       SendData();
@@ -333,6 +334,7 @@ void PrintMessageChr(char val[])
 
 void ConfigureESPWifi()
 {
+  flag_ESP_Wifi_Connected = false;
   ESPMod.Setup_Hardware();
   //Serial.find("ready");
   //ESPMod.wifiCmd("ATE0",1000,"OK");
