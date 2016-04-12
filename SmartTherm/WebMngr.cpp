@@ -11,14 +11,7 @@ bool WebMngr::WifiAPConnected(String sAPName)
   Serial.flush();
   Serial.println(F("AT+CWJAP_CUR?"));
   if (Serial.find("\n+CWJAP_CUR:\"")){
-    String curAPName = "";
-    char s = Serial.read();
-    byte i = 0;
-    while ((s!='"')&&(i<10)){
-      curAPName = curAPName + s;
-      s = Serial.read();
-      i++;
-    }
+    String curAPName = Serial.readStringUntil('"');
     if (curAPName != sAPName){
       this->dbgOutput("Wifi: AP is wrong:"+curAPName);
       return false;  
