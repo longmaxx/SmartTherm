@@ -13,7 +13,7 @@ class WebMngr{
   //boolean ListWifiAPs();
   bool WifiAPConnected(String sAPName);
   bool ConnectWifi(String sNetName,String sPassword);
-  bool SendGetRequest(String sUrl);
+  bool SendGetRequest(String* sUrl);
   //bool InternetAccess();
   boolean  ATCmd(String cmd, int timeout, char answer[]);
 

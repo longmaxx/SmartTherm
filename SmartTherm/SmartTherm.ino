@@ -337,7 +337,7 @@ void ConfigureESPWifi()
   flag_ESP_Wifi_Connected = false;
   ESPMod.Setup_Hardware();
   //Serial.find("ready");
-  //ESPMod.wifiCmd("ATE0",1000,"OK");
+  //ESPMod.ATCmd("ATE0",1000,"OK");
   if (!ESPMod.WifiAPConnected(WifiAP_Name)){
     if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
       ExtSerial.println(F("ConfigureESPWifi:Fail"));
@@ -348,12 +348,30 @@ void ConfigureESPWifi()
   flag_ESP_NeedConfigure = false;
 }
 
+String getStrQueryTimeZone(int nTimeZone)
+{
+  String res = "";
+  if (nTimeZone>0) 
+    res += "%2B";  
+  else
+    res += "-";
+  if (nTimeZone<10)
+    res +="0";
+  res += nTimeZone;
+  res +="00";
+  return res;    
+}
+
+
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + "&celsium=" + (String)(data.Temperature) + "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) + "TZ" + nTimeZone;
+  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + 
+                "&celsium=" + (String)(data.Temperature) +
+                "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
+                getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
-  return ESPMod.SendGetRequest(sUrl);
+  return ESPMod.SendGetRequest(&sUrl);
 }
 
 String firstZero(int val)

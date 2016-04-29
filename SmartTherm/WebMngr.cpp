@@ -79,8 +79,10 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
   }
 }
 
-bool WebMngr::SendGetRequest(String sUrl)
+bool WebMngr::SendGetRequest(String* sUrl)
 {
+  this->dbgOutput(*sUrl);
+  
   String msgBegin = "GET /";
   String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   if(!ATCmd(F("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80"),5000,sOK)){
@@ -89,12 +91,12 @@ bool WebMngr::SendGetRequest(String sUrl)
   }
   Serial.flush();
   Serial.print(F("AT+CIPSEND="));
-  Serial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
+  Serial.println(msgBegin.length() + sUrl->length() + msgEnd.length());
   boolean res= false;
   //delay(5000);
   if(this->WaitStrSerial(">",5000)) {
     Serial.print(msgBegin);
-    Serial.print(sUrl);
+    Serial.print(*sUrl);
     Serial.flush();
     Serial.print(msgEnd);
     res = this->WaitStrSerial("success",5000);
