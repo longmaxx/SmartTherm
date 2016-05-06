@@ -7,7 +7,6 @@
 
 class SensorData {
   public:
-    
     Time Timestamp;
     float Temperature;// celsium
 };
