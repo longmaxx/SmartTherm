@@ -1,13 +1,14 @@
-
+#include <WiFiEsp.h>
 #include <DS1307.h>
 #include <SoftwareSerial.h>
 #include "DS18B20.h"
 #include "LCDMngr.cpp"
 #include "SensorData.h"
 #include "RingBuffer.h"
-#include "WebMngr.h"
 #include "UserCmdMngr.h"
 #include "EEPROMMngr.h"
+
+
 
 
 /*
@@ -61,13 +62,15 @@ float lastTemperatureC;
 
 String WifiAP_Name;
 String WifiAP_Pwd;
+String server = "192.168.1.100";
 
 String sDeviceName;// = "Nano1";
 signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
+WiFiEspClient EspClient;
+
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
-RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
-WebMngr ESPMod;// Wifi class object
+RingBufferForData RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
@@ -84,16 +87,16 @@ void setup() {
   //lcd.clear();
   flag_runMainProgram = true;
   CmdMngr1.Init(&ExtSerial);
+  Serial.begin(9600);
+  WiFi.init(&Serial);
+  
   ExtSerial.begin(9600);
-  ESPMod.dbgOutput = PrintMessage;
-  //ESPMod.dbgOutputCh = PrintMessageCh;
-  //ESPMod.dbgOutputChr = PrintMessageChr;
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
-  //delay(5000);
+  WiFi.begin(WifiAP_Name,WifiAP_Pwd);
 }
 
 void loop ()
@@ -103,7 +106,7 @@ void loop ()
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
     if (flag_ESP_NeedConfigure){
-      ConfigureESPWifi();//если необъодимо - переподключаем вайфай
+      //ConfigureESPWifi();//если необъодимо - переподключаем вайфай
     }  
     CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
   
@@ -322,7 +325,19 @@ boolean SendData_Http(SensorData data)
                 getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
-  return ESPMod.SendGetRequest(&sUrl);
+    if (EspClient.connect(server, 80)) {
+    ExtSerial.println("Connected to server");
+    // Make a HTTP request
+    EspClient.print("GET");
+    EspClient.print(sUrl); 
+    EspClient.println("HTTP/1.1");
+    EspClient.println("Host: hui");
+    EspClient.println("Connection: close");
+    EspClient.println();
+  }
+
+  
+  return true;
 }
 
 //======================COMMANDS=====================================

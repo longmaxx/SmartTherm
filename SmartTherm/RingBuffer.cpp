@@ -2,7 +2,7 @@
 
 ////=================== Кольцевой буфер FILO Begin=========================================
 
-byte RingBuffer::nextBufIndex(byte i)
+byte RingBufferForData::nextBufIndex(byte i)
 {
   if (i == (sizeof(this->RingBuf)-1)){
     // крайнее правое положение
@@ -12,7 +12,7 @@ byte RingBuffer::nextBufIndex(byte i)
   }
 }
 
-byte RingBuffer::prevBufIndex(byte i)
+byte RingBufferForData::prevBufIndex(byte i)
 {
   if (i == 0){
     // крайнее левое положение
@@ -23,7 +23,7 @@ byte RingBuffer::prevBufIndex(byte i)
 }
 
 
-void RingBuffer::pushTData(SensorData value)
+void RingBufferForData::pushTData(SensorData value)
 {
   // сохраняет данные в конец кольцевого буфера
   //сдвигаемся на следующую ячейку в буфере
@@ -43,7 +43,7 @@ void RingBuffer::pushTData(SensorData value)
 }
 
 
-SensorData RingBuffer::popTData()
+SensorData RingBufferForData::popTData()
 {
   // извлекает последнее значение из кольцевого буфера
   if (BufHasData()){
@@ -55,12 +55,12 @@ SensorData RingBuffer::popTData()
   }
 }
 
-void RingBuffer::CancelPopData()
+void RingBufferForData::CancelPopData()
 {
   this->firstBufIndex = prevBufIndex(this->firstBufIndex);
 }
 //
-bool RingBuffer::BufHasData()
+bool RingBufferForData::BufHasData()
 {
   //возвращает количество непрочитаных данных в буфере
   return firstBufIndex != lastBufIndex;

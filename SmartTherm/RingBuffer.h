@@ -4,7 +4,7 @@
   #include "SensorData.h"
 #endif  
 
-class RingBuffer{
+class RingBufferForData{
   private:
     byte firstBufIndex = 0;
     byte lastBufIndex=0;// индексы в кольцевом буфере
