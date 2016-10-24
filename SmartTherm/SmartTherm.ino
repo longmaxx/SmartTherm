@@ -48,7 +48,7 @@
   D13 (LED)
 */
 
-LCDMngr lcd(7,6,5,3,4);
+//LCDMngr lcd(7,6,5,3,4);
 SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire OneWirePort(12);
 DS18B20 DS(&OneWirePort);
@@ -60,14 +60,15 @@ Time lastRefreshDT;// время последнего снятия данных
 
 float lastTemperatureC;
 
+WiFiEspClient EspClient;
 String WifiAP_Name;
 String WifiAP_Pwd;
-String server = "192.168.1.100";
+char server[] = "192.168.1.100";
 
 String sDeviceName;// = "Nano1";
 signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
-WiFiEspClient EspClient;
+
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBufferForData RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
@@ -83,7 +84,7 @@ boolean flag_runMainProgram = true;
 unsigned long LastMillisVal=0;
 
 void setup() {
-  lcd.begin();
+//  lcd.begin();
   //lcd.clear();
   flag_runMainProgram = true;
   CmdMngr1.Init(&ExtSerial);
@@ -96,12 +97,15 @@ void setup() {
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
-  WiFi.begin(WifiAP_Name,WifiAP_Pwd);
+  char apName[20];
+  WifiAP_Name.toCharArray(apName,20);
+  char ApPwd[20];
+  WifiAP_Pwd.toCharArray(ApPwd,20);
+  WiFi.begin(apName,ApPwd);
 }
 
 void loop ()
 {
-  
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
@@ -112,7 +116,7 @@ void loop ()
   
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
-      DrawLCD();
+      //DrawLCD();
     }
     if (!flag_ESP_NeedConfigure){
       SendData();
@@ -120,7 +124,7 @@ void loop ()
   }
 }
 
-void DrawLCD()
+/*void DrawLCD()
 {
   lcd.clear();
   DrawLCD_Screen1();
@@ -150,7 +154,7 @@ void DrawLCD_Screen1()
   //Time
   lcd.setCursor(0,4);
   lcd.writeStr(WifiAP_Name);
-}
+}*/
 
 
 void LoadDataFromEEPROM()
@@ -286,21 +290,6 @@ void PrintMessageChr(char val[])
   ExtSerial.println(F(">"));
 }
 
-void ConfigureESPWifi()
-{
-  flag_ESP_Wifi_Connected = false;
-  ESPMod.Setup_Hardware();
-  //Serial.find("ready");
-  //ESPMod.ATCmd("ATE0",1000,"OK");
-  if (!ESPMod.WifiAPConnected(WifiAP_Name)){
-    if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-      ExtSerial.println(F("ConfigureESPWifi:Fail"));
-      return;
-    }
-  }    
-  flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
-  flag_ESP_NeedConfigure = false;
-}
 
 String getStrQueryTimeZone(int nTimeZone)
 {
