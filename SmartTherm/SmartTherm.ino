@@ -122,38 +122,6 @@ void loop ()
   }
 }
 
-/*void DrawLCD()
-{
-  lcd.clear();
-  DrawLCD_Screen1();
-}
-
-
-void DrawLCD_Screen1()
-{
-  // Wifi status
-  lcd.setCursor(0,0);
-  lcd.writeStr(F("WiFi: "));
-  if (flag_ESP_Wifi_Connected){
-    lcd.writeStr(F("OK"));
-  }else{
-    lcd.writeStr(F("Fail"));
-  }
-  //LastTemperature
-  lcd.setCursor(0,1);
-  lcd.writeStr(F("LastTemp:"));
-  lcd.writeStr((String)lastTemperatureC);
-  //Time
-  lcd.setCursor(0,2);
-  lcd.writeStr(F("Time:"));
-  lcd.writeStr(RTC.getTimeStr());
-  lcd.setCursor(0,3);
-  lcd.writeStr(RTC.getDateStr());
-  //Time
-  lcd.setCursor(0,4);
-  lcd.writeStr(WifiAP_Name);
-}*/
-
 void LoadDataFromEEPROM()
 {
   String tmp = EEManager.getWifiName();
@@ -234,7 +202,6 @@ void setLastRefreshDateTime()
   lastRefreshDT = RTC.getTime();
 }
 
-
 void saveTemperatureToRAM(){
   //реализация кольцевого буфера для хранения температурных данных в RAM  
   SensorData dt;
@@ -261,9 +228,6 @@ void PrintOutData(){
   ExtSerial.print(F(":"));
   ExtSerial.println(lastRefreshDT.sec);
 }
-
-
-
 
 void PrintMessage(String val)
 {
