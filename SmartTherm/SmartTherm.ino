@@ -2,7 +2,6 @@
 #include <DS1307.h>
 #include <SoftwareSerial.h>
 #include "DS18B20.h"
-#include "LCDMngr.cpp"
 #include "SensorData.h"
 #include "RingBuffer.h"
 #include "UserCmdMngr.h"
@@ -49,7 +48,9 @@
 */
 
 //LCDMngr lcd(7,6,5,3,4);
-SoftwareSerial ExtSerial(10,11);// debug serial port
+SoftwareSerial SWSerial(10,11);// debug serial port
+#define ExtSerial Serial
+
 OneWire OneWirePort(12);
 DS18B20 DS(&OneWirePort);
 
@@ -64,7 +65,7 @@ WiFiEspClient EspClient;
 String WifiAP_Name;
 String WifiAP_Pwd;
 char server[] = "192.168.1.100";
-
+char port = 80;
 String sDeviceName;// = "Nano1";
 signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
@@ -76,7 +77,7 @@ EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
 boolean flag_NeedRefreshData   = true;// пора обновлять данные с датчиков
-boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
+//boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 boolean flag_ESP_Wifi_Connected = false;// проверяется в главном цикле 
 boolean flag_runMainProgram = true;
 
@@ -84,24 +85,25 @@ boolean flag_runMainProgram = true;
 unsigned long LastMillisVal=0;
 
 void setup() {
-//  lcd.begin();
+  //lcd.begin();
   //lcd.clear();
   flag_runMainProgram = true;
-  CmdMngr1.Init(&ExtSerial);
   Serial.begin(9600);
-  WiFi.init(&Serial);
+  SWSerial.begin(9600);
+  CmdMngr1.Init(&Serial);
   
-  ExtSerial.begin(9600);
+  WiFi.init(&SWSerial);
+  
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
-  char apName[20];
-  WifiAP_Name.toCharArray(apName,20);
-  char ApPwd[20];
-  WifiAP_Pwd.toCharArray(ApPwd,20);
-  WiFi.begin(apName,ApPwd);
+  char wifiAPName[15];
+  WifiAP_Name.toCharArray(wifiAPName,15); 
+  char wifiAPPwd[15];
+  WifiAP_Pwd.toCharArray(wifiAPPwd,15); 
+  WiFi.begin(wifiAPName,wifiAPPwd);
 }
 
 void loop ()
@@ -109,18 +111,14 @@ void loop ()
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
-    if (flag_ESP_NeedConfigure){
-      //ConfigureESPWifi();//если необъодимо - переподключаем вайфай
-    }  
     CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
   
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
-      //DrawLCD();
+     // DrawLCD();
     }
-    if (!flag_ESP_NeedConfigure){
-      SendData();
-    }
+    SendData();
+    
   }
 }
 
@@ -155,7 +153,6 @@ void DrawLCD_Screen1()
   lcd.setCursor(0,4);
   lcd.writeStr(WifiAP_Name);
 }*/
-
 
 void LoadDataFromEEPROM()
 {
@@ -208,7 +205,6 @@ void SendData()
       ExtSerial.println(F("Cancel POP data"));
       RB.CancelPopData();
       bSendSuccessful = false;
-      flag_ESP_NeedConfigure = true;
       break;
     }
   }
@@ -290,7 +286,6 @@ void PrintMessageChr(char val[])
   ExtSerial.println(F(">"));
 }
 
-
 String getStrQueryTimeZone(int nTimeZone)
 {
   String res = "";
@@ -305,7 +300,6 @@ String getStrQueryTimeZone(int nTimeZone)
   return res;    
 }
 
-
 boolean SendData_Http(SensorData data)
 {
   String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + 
@@ -314,15 +308,18 @@ boolean SendData_Http(SensorData data)
                 getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
-    if (EspClient.connect(server, 80)) {
+    if (EspClient.connect(server, port)) {
     ExtSerial.println("Connected to server");
     // Make a HTTP request
-    EspClient.print("GET");
+    EspClient.print("GET  ");
     EspClient.print(sUrl); 
     EspClient.println("HTTP/1.1");
-    EspClient.println("Host: hui");
+    EspClient.println("Host: ");
+    EspClient.println(server);
     EspClient.println("Connection: close");
     EspClient.println();
+  }else{
+    ExtSerial.println("ConnectFailed!");
   }
 
   
@@ -417,9 +414,12 @@ void Cmd_SetDate()
  if ((sTimeZone.charAt(0) == '-')){
   nTZ = sTimeZone.substring(1).toInt();   
   nTZ = -nTZ;
- }else{
+ }else if ((sTimeZone.charAt(0) == '+')){
   nTZ = sTimeZone.substring(1).toInt();   
+ }else{
+  nTZ = sTimeZone.substring(0).toInt();   
  }
+ ExtSerial.println(nTZ);
  if (nTZ != 255){
   RTC.poke(RTC_TIME_ZONE_ADDR,nTZ);
   ExtSerial.print(F("savedZone:"));
@@ -520,8 +520,8 @@ void Cmd_PrintDeviceInfo()
   //Wifi info
   ExtSerial.print(F("Wifi AP Name: "));
   ExtSerial.println(WifiAP_Name);
-  ExtSerial.print(F("Wifi connected: "));
-  ExtSerial.println(BoolToStr(!flag_ESP_NeedConfigure));
+  //ExtSerial.print(F("Wifi status: "));
+  //ExtSerial.println(WiFi.status);
   //Last temperature
   ExtSerial.print(F("Temperature data: "));
   ExtSerial.print(lastTemperatureC);
@@ -529,7 +529,7 @@ void Cmd_PrintDeviceInfo()
 
   ExtSerial.println(F("\r\nOK"));
 }
-//====================END Commands===================================
+//====================END Commands======================  =============
 
 void ExtSerialClear()
 {

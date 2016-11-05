@@ -4,7 +4,7 @@ UserCmdMngr::UserCmdMngr()
 {
 }
 
-void UserCmdMngr::Init(SoftwareSerial* pSWSP)
+void UserCmdMngr::Init(Stream* pSWSP)
 {
   this->SPort = pSWSP;
 }
@@ -17,12 +17,12 @@ void UserCmdMngr::SerialPortLoop()
   while (this->SPort->available()>0){
     char curByte;
     curByte = this->SPort->read();
-    if (curByte == '\n'){
+    if (curByte == '\r'){
       this->buf[this->bufIndex++]='\0';
       bEOLFound = true;
       break;
     }else{
-      //this->SPort->write(curByte);
+      this->SPort->write(curByte);
       if (curByte != '\r'){
         this->buf[this->bufIndex++]=curByte;
       }  
