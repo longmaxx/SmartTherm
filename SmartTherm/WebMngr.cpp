@@ -1,48 +1,55 @@
 #include "WebMngr.h"
 
+WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSerial(dbgSer)
+{
+ // wifiSerial = wifiSer;
+  //dbgSerial = dbgSer;
+}
+
+
 void WebMngr::Setup_Hardware()
 {
-  Serial.begin(115200);
-  Serial.setTimeout(5000);
+  //_wifiSerial.begin(115200);
+  _wifiSerial.setTimeout(5000);
 }
 
 bool WebMngr::WifiAPConnected(String sAPName)
 {
-  Serial.flush();
-  Serial.println(F("AT+CWJAP_CUR?"));
-  if (Serial.find("\n+CWJAP_CUR:\"")){
-    String curAPName = Serial.readStringUntil('"');
+  _wifiSerial.flush();
+  _wifiSerial.println(F("AT+CWJAP_CUR?"));
+  if (_wifiSerial.find("\n+CWJAP_CUR:\"")){
+    String curAPName = _wifiSerial.readStringUntil('"');
     if (curAPName != sAPName){
-      this->dbgOutput("WifiAPConnected: AP is wrong:"+curAPName);
+      PrintMessage("WifiAPConnected: AP is wrong:"+curAPName);
       return false;  
     }
     
   }else{
-    this->dbgOutput(F("WifiAPConnected: NoCmdResponse"));
+    PrintMessage(F("WifiAPConnected: NoCmdResponse"));
     return false;
   }
-  this->dbgOutput(F("WifiAPConnected: AP is ok"));
+  PrintMessage(F("WifiAPConnected: AP is ok"));
   return true;
 }
 
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
-  if (!this->WifiAPConnected(sNetName)){
-    this->ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
-    this->ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
+  if (!WifiAPConnected(sNetName)){
+    ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
+    ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
     String cmd="AT+CWJAP_CUR=\"";
     cmd+=sNetName;
     cmd+="\",\"";
     cmd+=sPassword;
     cmd+="\"";
-    Serial.println(cmd);
+    _wifiSerial.println(cmd);
     delay(5000);
     
-    if((Serial.find("WIFI CONNECTED"))&&(Serial.find("WIFI GOT IP")&&(Serial.find("\nOK")))){
-      this->dbgOutput(F("ConnectWifi: OK"));
+    if((_wifiSerial.find("WIFI CONNECTED"))&&(_wifiSerial.find("WIFI GOT IP")&&(_wifiSerial.find("\nOK")))){
+      PrintMessage(F("ConnectWifi: OK"));
       return true;
     }else{
-      this->dbgOutput(F("ConnectWifi: Fail"));
+      PrintMessage(F("ConnectWifi: Fail"));
       return false;
     }
   }
@@ -52,60 +59,60 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 //bool WebMngr::InternetAccess()
 //{
 //  if(ATCmd(F("AT+PING=\"ya.ru\""),5000,sOK)){
-//    this->dbgOutput(F("OK, Ping internet."));
+//    PrintMessage(F("OK, Ping internet."));
 //    return true;
 //  }else{
-//    this->dbgOutput(F("Fail ping internet."));
+//    PrintMessage(F("Fail ping internet."));
 //    return false;
 //  }
 //}
 
 //boolean WebMngr::ListWifiAPs(){
-//  return this->ATCmd(F("AT+CWLAP"),5000,sOK);
+//  return ATCmd(F("AT+CWLAP"),5000,sOK);
 //}
 
 boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
 {
-  Serial.flush();
-  Serial.println(cmd);
+  _wifiSerial.flush();
+  _wifiSerial.println(cmd);
   //delay(timeout);
-  if(Serial.find(answer)) {
-    //this->dbgOutput(F("WifiCmd = True"));
+  if(_wifiSerial.find(answer)) {
+    //PrintMessage(F("WifiCmd = True"));
     return true;
   } else {
-    //this->dbgOutput(F("WifiCmd = False"));
-    //this->dbgOutput("|");
+    //PrintMessage(F("WifiCmd = False"));
+    //PrintMessage("|");
     return false;
   }
 }
 
-bool WebMngr::SendGetRequest(String* sUrl)
+bool WebMngr::SendGetRequest(String &sUrl)
 {
-  this->dbgOutput(*sUrl);
+  PrintMessage(sUrl);
   
   String msgBegin = "GET /";
   String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
   if(!ATCmd(F("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80"),5000,sOK)){
-    Serial.println(F("AT+CIPCLOSE"));
+    _wifiSerial.println(F("AT+CIPCLOSE"));
     return false;
   }
-  Serial.flush();
-  Serial.print(F("AT+CIPSEND="));
-  Serial.println(msgBegin.length() + sUrl->length() + msgEnd.length());
+  _wifiSerial.flush();
+  _wifiSerial.print(F("AT+CIPSEND="));
+  _wifiSerial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
   boolean res= false;
   //delay(5000);
-  if(this->WaitStrSerial(">",5000)) {
-    Serial.print(msgBegin);
-    Serial.print(*sUrl);
-    Serial.flush();
-    Serial.print(msgEnd);
-    res = this->WaitStrSerial("success",5000);
-    this->WaitStrSerial("CLOSED",15000);
+  if(WaitStrSerial(">",5000)) {
+    _wifiSerial.print(msgBegin);
+    _wifiSerial.print(sUrl);
+    _wifiSerial.flush();
+    _wifiSerial.print(msgEnd);
+    res = WaitStrSerial("success",5000);
+    WaitStrSerial("CLOSED",15000);
    }  
-  Serial.flush();
-  Serial.println(F("AT+CIPCLOSE\r\n"));
+  _wifiSerial.flush();
+  _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
   delay(2000);
-  Serial.flush();
+  _wifiSerial.flush();
   return res;
 }
 
@@ -118,23 +125,46 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
   unsigned char maxIndex = strlen (strEtalon);
   char a;
   while (notExpired){
-    while (Serial.available()>0){
-      a = Serial.read();
+    while (_wifiSerial.available()>0){
+      a = _wifiSerial.read();
       if (strEtalon[index] == a){
         index++;
       }else{
         index = 0;
       }
       if (index == (maxIndex)){
-         this->dbgOutput(F("WaitStrSerial_true"));
+         PrintMessage(F("WaitStrSerial_true"));
         return true;
       }
       a='\0';
     }
     notExpired = (end1>millis());
   }
-  this->dbgOutput(F("WaitStrSerial_false"));
+  PrintMessage(F("WaitStrSerial_false"));
   return false;
 }
+
+void WebMngr::PrintMessage(String val)
+{
+  _dbgSerial.print(F("Message: <"));
+  _dbgSerial.print(val);
+  _dbgSerial.println(F(">"));
+}
+/*
+void WebMngr::PrintMessageCh(char val)
+{
+  dbgSerial.print(F("MessageCh: <"));
+  dbgSerial.print(val);
+  dbgSerial.println(F(">"));
+}
+*/
+/*
+void WebMngr::PrintMessageChr(char val[])
+{
+  dbgSerial.print(F("MessageCh: <"));
+  dbgSerial.print(val);
+  dbgSerial.println(F(">"));
+}
+*/
 
 

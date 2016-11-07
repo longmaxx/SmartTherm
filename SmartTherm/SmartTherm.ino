@@ -67,7 +67,7 @@ signed char nTimeZone = 0;// значение временной зоны. хр�
 
 UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
-WebMngr ESPMod;// Wifi class object
+WebMngr ESPMod(ExtSerial,Serial);// Wifi class object
 EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
@@ -83,11 +83,10 @@ void setup() {
   lcd.begin();
   //lcd.clear();
   flag_runMainProgram = true;
-  CmdMngr1.Init(&ExtSerial);
+  
+  Serial.begin(9600);
   ExtSerial.begin(9600);
-  ESPMod.dbgOutput = PrintMessage;
-  //ESPMod.dbgOutputCh = PrintMessageCh;
-  //ESPMod.dbgOutputChr = PrintMessageChr;
+  CmdMngr1.Init(&ExtSerial);
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
@@ -259,30 +258,6 @@ void PrintOutData(){
   ExtSerial.println(lastRefreshDT.sec);
 }
 
-
-
-
-void PrintMessage(String val)
-{
-  ExtSerial.print(F("Message: <"));
-  ExtSerial.print(val);
-  ExtSerial.println(F(">"));
-}
-
-void PrintMessageCh(char val)
-{
-  ExtSerial.print(F("MessageCh: <"));
-  ExtSerial.print(val);
-  ExtSerial.println(F(">"));
-}
-
-void PrintMessageChr(char val[])
-{
-  ExtSerial.print(F("MessageCh: <"));
-  ExtSerial.print(val);
-  ExtSerial.println(F(">"));
-}
-
 void ConfigureESPWifi()
 {
   flag_ESP_Wifi_Connected = false;
@@ -322,7 +297,7 @@ boolean SendData_Http(SensorData data)
                 getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest Url:"));
   ExtSerial.println(sUrl);
-  return ESPMod.SendGetRequest(&sUrl);
+  return ESPMod.SendGetRequest(sUrl);
 }
 
 //======================COMMANDS=====================================

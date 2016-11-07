@@ -3,20 +3,23 @@
   #define WEBMNGR_H
 
 class WebMngr{
-  char sOK[3] = "OK";
+  char sOK[3] = {'O','K','\0'};
+  public: WebMngr( Stream &wifiSer,Stream &dbgSer);
   public:
-  void (*dbgOutput)(String msg);// указатель на функцию обработчик вывода в лог. заполняется после создания экземпляра класса
-  //void (*dbgOutputChr)(char msg[]);// указатель на функцию обработчик вывода в лог. заполняется после создания экземпляра класса
-  //void (*dbgOutputCh)(char msg);// указатель на функцию обработчик вывода в лог. заполняется после создания экземпляра класса
+      void Setup_Hardware();
+      //boolean ListWifiAPs();
+      bool WifiAPConnected(String sAPName);
+      bool ConnectWifi(String sNetName,String sPassword);
+      bool SendGetRequest(String &sUrl);
+      //bool InternetAccess();
+      boolean  ATCmd(String cmd, int timeout, char answer[]);
+  private: 
+      bool WaitStrSerial(char strEtalon[],int timeout);
+      Stream& _dbgSerial;
+      Stream& _wifiSerial;     
+      void PrintMessage(String val);
+      //void PrintMessage(char val);
+      //void PrintMessage(char val[]);
   
-  void Setup_Hardware();
-  //boolean ListWifiAPs();
-  bool WifiAPConnected(String sAPName);
-  bool ConnectWifi(String sNetName,String sPassword);
-  bool SendGetRequest(String* sUrl);
-  //bool InternetAccess();
-  boolean  ATCmd(String cmd, int timeout, char answer[]);
-
-  private: bool WaitStrSerial(char strEtalon[],int timeout);
 };
 #endif
