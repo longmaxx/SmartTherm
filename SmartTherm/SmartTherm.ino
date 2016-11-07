@@ -86,13 +86,11 @@ void setup() {
   
   Serial.begin(9600);
   ExtSerial.begin(9600);
-  //CmdMngr1.Init(ExtSerial);
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
-  //delay(5000);
 }
 
 void loop ()
@@ -261,7 +259,6 @@ void PrintOutData(){
 void ConfigureESPWifi()
 {
   flag_ESP_Wifi_Connected = false;
-  ESPMod.Setup_Hardware();
   //Serial.find("ready");
   //ESPMod.ATCmd("ATE0",1000,"OK");
   if (!ESPMod.WifiAPConnected(WifiAP_Name)){

@@ -4,12 +4,6 @@ WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSeria
 {
  // wifiSerial = wifiSer;
   //dbgSerial = dbgSer;
-}
-
-
-void WebMngr::Setup_Hardware()
-{
-  //_wifiSerial.begin(115200);
   _wifiSerial.setTimeout(5000);
 }
 
@@ -90,9 +84,13 @@ bool WebMngr::SendGetRequest(String &sUrl)
 {
   PrintMessage(sUrl);
   
-  String msgBegin = "GET /";
-  String msgEnd = " HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n";  
-  if(!ATCmd(F("AT+CIPSTART=\"TCP\",\"192.168.1.100\",80"),5000,sOK)){
+  String msgBegin = F("GET /");
+  String msgEnd = F(" HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n");  
+  String sCmdOpenTCP;
+  sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
+  sCmdOpenTCP.concat("192.168.1.100");
+  sCmdOpenTCP.concat(F("\",80"));
+  if(!ATCmd(sCmdOpenTCP,5000,sOK)){
     _wifiSerial.println(F("AT+CIPCLOSE"));
     return false;
   }
@@ -146,25 +144,8 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
 
 void WebMngr::PrintMessage(String val)
 {
-  _dbgSerial.print(F("Message: <"));
+  _dbgSerial.print(F("WebMngr: <"));
   _dbgSerial.print(val);
   _dbgSerial.println(F(">"));
 }
-/*
-void WebMngr::PrintMessageCh(char val)
-{
-  dbgSerial.print(F("MessageCh: <"));
-  dbgSerial.print(val);
-  dbgSerial.println(F(">"));
-}
-*/
-/*
-void WebMngr::PrintMessageChr(char val[])
-{
-  dbgSerial.print(F("MessageCh: <"));
-  dbgSerial.print(val);
-  dbgSerial.println(F(">"));
-}
-*/
-
 

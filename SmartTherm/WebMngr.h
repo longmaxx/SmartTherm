@@ -6,7 +6,6 @@ class WebMngr{
   char sOK[3] = {'O','K','\0'};
   public: WebMngr( Stream &wifiSer,Stream &dbgSer);
   public:
-      void Setup_Hardware();
       //boolean ListWifiAPs();
       bool WifiAPConnected(String sAPName);
       bool ConnectWifi(String sNetName,String sPassword);
@@ -18,8 +17,5 @@ class WebMngr{
       Stream& _dbgSerial;
       Stream& _wifiSerial;     
       void PrintMessage(String val);
-      //void PrintMessage(char val);
-      //void PrintMessage(char val[]);
-  
 };
 #endif
