@@ -5,11 +5,11 @@
 
 class DS18B20{
   public:
-    DS18B20(OneWire* port);
+    DS18B20(OneWire &port);
     float getTemperatureCelsium();
     void setTemperatureResolution();
   private:
-    OneWire* ds;
+    OneWire &ds;
     byte scratchpad[12];
     void readDS18B20Scratchpad();
 };

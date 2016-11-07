@@ -1,8 +1,7 @@
 #include "DS18B20.h"
 
-DS18B20::DS18B20(OneWire* port)
+DS18B20::DS18B20(OneWire& port):ds(port)
 {
-  this->ds = port;
 }
 
 float DS18B20::getTemperatureCelsium()
@@ -34,29 +33,29 @@ float DS18B20::getTemperatureCelsium()
 
 void DS18B20::setTemperatureResolution()
 {
-    ds->reset();
-    ds->write(0xCC); // skip ROM
-    ds->write(0x4E);///write scratchpad
-    ds->write(0x00);//TH
-    ds->write(0x00);//TL
-    ds->write(0b01011111);//prefs
+    ds.reset();
+    ds.write(0xCC); // skip ROM
+    ds.write(0x4E);///write scratchpad
+    ds.write(0x00);//TH
+    ds.write(0x00);//TL
+    ds.write(0b01011111);//prefs
 }
 void DS18B20::readDS18B20Scratchpad()
 {
   byte i;
-  ds->reset();
-  ds->write(0xCC);
+  ds.reset();
+  ds.write(0xCC);
   //ds.reset();
-  ds->write(0x44); // start conversion
+  ds.write(0x44); // start conversion
   delay(400);     // wait conversion
   // we might do a ds.depower() here, but the reset will take care of it.
    
-  ds->reset();
-  ds->write(0xCC);//skip rom
+  ds.reset();
+  ds.write(0xCC);//skip rom
   //ds.reset();    
-  ds->write(0xBE);         // Read Scratchpad
+  ds.write(0xBE);         // Read Scratchpad
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
-    scratchpad[i] = ds->read();
+    scratchpad[i] = ds.read();
   }
 }
 

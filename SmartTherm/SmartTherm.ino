@@ -50,7 +50,7 @@
 LCDMngr lcd(7,6,5,3,4);
 SoftwareSerial ExtSerial(10,11);// debug serial port
 OneWire OneWirePort(12);
-DS18B20 DS(&OneWirePort);
+DS18B20 DS(OneWirePort);
 
 DS1307 RTC(18, 19);
 #define RTC_TIME_ZONE_ADDR (0x08)
