@@ -17,7 +17,7 @@
   #define CMD_I_HELP (9)
 class UserCmdMngr{
   private: unsigned char lastFoundCmd;  
-  private: SoftwareSerial* SPort;
+  private: SoftwareSerial &_SPort;
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;
   public: const char* commands[commandsCount] = {"hello",
@@ -31,8 +31,7 @@ class UserCmdMngr{
                                                   "?"
                                                  };
   
-  public: UserCmdMngr();
-  public: void Init(SoftwareSerial* pSWSP);
+  public: UserCmdMngr(SoftwareSerial &pSWSP);
   public: void SerialPortLoop();
   public: unsigned char PopLatestParsedCmd();
   private: unsigned char parseCmdName();// возвращает индекс команды или 0

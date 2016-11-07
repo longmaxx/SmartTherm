@@ -65,7 +65,7 @@ String WifiAP_Pwd;
 String sDeviceName;// = "Nano1";
 signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
-UserCmdMngr CmdMngr1;// класс обрабатывающий пользовательские команды через SoftwareSerial
+UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod(ExtSerial,Serial);// Wifi class object
 EEPROMMngr EEManager;// EEPROM actions
@@ -86,7 +86,7 @@ void setup() {
   
   Serial.begin(9600);
   ExtSerial.begin(9600);
-  CmdMngr1.Init(&ExtSerial);
+  //CmdMngr1.Init(ExtSerial);
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
