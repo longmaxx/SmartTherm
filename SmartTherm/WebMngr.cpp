@@ -86,11 +86,8 @@ bool WebMngr::SendGetRequest(String &sUrl)
   
   String msgBegin = F("GET /");
   String msgEnd = F(" HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n");  
-  String sCmdOpenTCP;
-  sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
-  sCmdOpenTCP.concat("192.168.1.100");
-  sCmdOpenTCP.concat(F("\",80"));
-  if(!ATCmd(sCmdOpenTCP,5000,sOK)){
+
+  if(!cmdOpenTCPConnection("192.168.1.100",80)){
     _wifiSerial.println(F("AT+CIPCLOSE"));
     return false;
   }
@@ -112,6 +109,16 @@ bool WebMngr::SendGetRequest(String &sUrl)
   delay(2000);
   _wifiSerial.flush();
   return res;
+}
+
+bool WebMngr::cmdOpenTCPConnection(String serverIP, int port)
+{
+  String sCmdOpenTCP;
+  sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
+  sCmdOpenTCP.concat(serverIP);
+  sCmdOpenTCP.concat(F("\","));
+  sCmdOpenTCP.concat(port);
+  return ATCmd(sCmdOpenTCP,5000,sOK);
 }
 
 bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
