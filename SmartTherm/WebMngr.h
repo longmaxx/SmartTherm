@@ -17,6 +17,8 @@ class WebMngr{
       Stream& _dbgSerial;
       Stream& _wifiSerial;     
       void PrintMessage(String val);
-      bool cmdOpenTCPConnection(String serverIP, int port);
+      bool cmdConnectionOpenTCP(String serverIP, int port);
+      bool cmdConnectionClose();
+      bool cmdSendData(String data);
 };
 #endif

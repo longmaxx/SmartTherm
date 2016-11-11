@@ -86,32 +86,34 @@ bool WebMngr::SendGetRequest(String &sUrl)
   
   String msgBegin = F("GET /");
   String msgEnd = F(" HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n");  
-
-  if(!cmdOpenTCPConnection("192.168.1.100",80)){
-    _wifiSerial.println(F("AT+CIPCLOSE"));
-    return false;
+  bool res = false;
+  if(cmdConnectionOpenTCP("192.168.1.100",80)){
+    cmdSendData(msgBegin);
+    cmdSendData(sUrl);
+    cmdSendData(msgEnd);
+    res = true;
   }
-  _wifiSerial.flush();
-  _wifiSerial.print(F("AT+CIPSEND="));
-  _wifiSerial.println(msgBegin.length() + sUrl.length() + msgEnd.length());
-  boolean res= false;
-  //delay(5000);
-  if(WaitStrSerial(">",5000)) {
-    _wifiSerial.print(msgBegin);
-    _wifiSerial.print(sUrl);
-    _wifiSerial.flush();
-    _wifiSerial.print(msgEnd);
-    res = WaitStrSerial("success",5000);
-    WaitStrSerial("CLOSED",15000);
-   }  
-  _wifiSerial.flush();
-  _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
-  delay(2000);
-  _wifiSerial.flush();
+  cmdConnectionClose();
   return res;
 }
 
-bool WebMngr::cmdOpenTCPConnection(String serverIP, int port)
+bool WebMngr::cmdSendData(String data)
+{
+  bool res= false;
+  int len = data.length();
+  
+  _wifiSerial.flush();
+  _wifiSerial.print(F("AT+CIPSEND="));
+  _wifiSerial.println(len);
+
+  if(WaitStrSerial(">",5000)) {
+    _wifiSerial.print(data);
+    res = WaitStrSerial("SEND OK",500);
+  }
+  return res;
+}
+
+bool WebMngr::cmdConnectionOpenTCP(String serverIP, int port)
 {
   String sCmdOpenTCP;
   sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
@@ -119,6 +121,15 @@ bool WebMngr::cmdOpenTCPConnection(String serverIP, int port)
   sCmdOpenTCP.concat(F("\","));
   sCmdOpenTCP.concat(port);
   return ATCmd(sCmdOpenTCP,5000,sOK);
+}
+
+bool WebMngr::cmdConnectionClose()
+{
+  _wifiSerial.flush();
+  _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
+  delay(2000);
+  _wifiSerial.flush();
+  return true;
 }
 
 bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
