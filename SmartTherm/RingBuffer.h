@@ -13,9 +13,10 @@ class RingBuffer{
     bool BufHasData();
     byte nextBufIndex(byte i);
     byte prevBufIndex(byte i);
-    SensorData popTData();
+    void push(SensorData value);
+    SensorData pop();
     void CancelPopData();
-    void pushTData(SensorData value);
+    
 };
 
 

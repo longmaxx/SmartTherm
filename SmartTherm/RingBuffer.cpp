@@ -1,6 +1,6 @@
 #include "RingBuffer.h"
 
-////=================== Кольцевой буфер FILO Begin=========================================
+////=================== Кольцевой буфер FIFO Begin=========================================
 
 byte RingBuffer::nextBufIndex(byte i)
 {
@@ -23,7 +23,7 @@ byte RingBuffer::prevBufIndex(byte i)
 }
 
 
-void RingBuffer::pushTData(SensorData value)
+void RingBuffer::push(SensorData value)
 {
   // сохраняет данные в конец кольцевого буфера
   //сдвигаемся на следующую ячейку в буфере
@@ -38,12 +38,10 @@ void RingBuffer::pushTData(SensorData value)
     this->firstBufIndex = nextBufIndex(this->firstBufIndex);
   }
   //PrintMessage("Push data. "+(String)firstBufIndex + "," + (String)lastBufIndex);
-  
-  
 }
 
 
-SensorData RingBuffer::popTData()
+SensorData RingBuffer::pop()
 {
   // извлекает последнее значение из кольцевого буфера
   if (BufHasData()){

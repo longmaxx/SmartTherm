@@ -190,7 +190,7 @@ void SendData()
     return;
   ExtSerial.println(F("\r\n====SendingData===;"));
   while(RB.BufHasData()){
-    SensorData val = RB.popTData();// забираем из буфера данные
+    SensorData val = RB.pop();// забираем из буфера данные
     // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
     // отсылаем данные по HTTP
@@ -234,7 +234,7 @@ void saveTemperatureToRAM(){
   SensorData dt;
   dt.Timestamp = lastRefreshDT;
   dt.Temperature = lastTemperatureC;
-  RB.pushTData(dt);
+  RB.push(dt);
 }
 
 void PrintOutData(){
