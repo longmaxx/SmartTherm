@@ -9,7 +9,9 @@ class WebMngr{
       //boolean ListWifiAPs();
       bool WifiAPConnected(String sAPName);
       bool ConnectWifi(String sNetName,String sPassword);
-      bool SendGetRequest(String &sUrl);
+      bool cmdConnectionOpenTCP(String serverIP, int port);
+      bool cmdConnectionClose();
+      bool cmdSendData(String data);
       //bool InternetAccess();
       boolean  ATCmd(String cmd, int timeout, char answer[]);
   private: 
@@ -17,8 +19,6 @@ class WebMngr{
       Stream& _dbgSerial;
       Stream& _wifiSerial;     
       void PrintMessage(String val);
-      bool cmdConnectionOpenTCP(String serverIP, int port);
-      bool cmdConnectionClose();
-      bool cmdSendData(String data);
+      
 };
 #endif

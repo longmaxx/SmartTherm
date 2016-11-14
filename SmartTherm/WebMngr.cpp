@@ -80,23 +80,6 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
   }
 }
 
-bool WebMngr::SendGetRequest(String &sUrl)
-{
-  PrintMessage(sUrl);
-  
-  String msgBegin = F("GET /");
-  String msgEnd = F(" HTTP/1.1\r\nHost:192.168.1.100:80\r\n\r\n");  
-  bool res = false;
-  if(cmdConnectionOpenTCP("192.168.1.100",80)){
-    cmdSendData(msgBegin);
-    cmdSendData(sUrl);
-    cmdSendData(msgEnd);
-    res = true;
-  }
-  cmdConnectionClose();
-  return res;
-}
-
 bool WebMngr::cmdSendData(String data)
 {
   bool res= false;

@@ -288,13 +288,31 @@ String getStrQueryTimeZone(int nTimeZone)
 
 boolean SendData_Http(SensorData data)
 {
-  String sUrl = "TMon/index.php?r=temperatures/commit&devicename=" + sDeviceName + 
-                "&celsium=" + (String)(data.Temperature) +
-                "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
-                getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
-  ExtSerial.print(F("Send HttpRequest Url:"));
-  ExtSerial.println(sUrl);
-  return ESPMod.SendGetRequest(sUrl);
+  String sHost = "192.168.1.100";
+  int nPort = 82;
+  
+  String sRequestUrl = F("TMon/index.php?r=temperatures/commit");
+  String sUrlParamDeviceName = "&devicename=" + sDeviceName;
+  String sUrlParamCelsium = "&celsium=" + (String)(data.Temperature);
+  String sUrlParamDateTime = "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
+                          getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
+  ExtSerial.print(F("Send HttpRequest"));
+
+  bool res = true;
+  if(ESPMod.cmdConnectionOpenTCP(sHost,nPort)){
+    res &= ESPMod.cmdSendData(F("GET /"));
+    // url body
+    res &= ESPMod.cmdSendData(sRequestUrl);
+    res &= ESPMod.cmdSendData(sUrlParamDeviceName);
+    res &= ESPMod.cmdSendData(sUrlParamCelsium);
+    res &= ESPMod.cmdSendData(sUrlParamDateTime);
+    // end http request
+    res &= ESPMod.cmdSendData(F(" HTTP/1.1\r\nHost:"));
+    res &= ESPMod.cmdSendData(sHost);
+    res &= ESPMod.cmdSendData(":"+(String)nPort+"\r\n\r\n");
+  }
+  ESPMod.cmdConnectionClose();
+  return res;
 }
 
 //======================COMMANDS=====================================
