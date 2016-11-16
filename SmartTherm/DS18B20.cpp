@@ -6,7 +6,7 @@ DS18B20::DS18B20(OneWire& port):ds(port)
 
 float DS18B20::getTemperatureCelsium()
 {
-  this->readDS18B20Scratchpad();
+  readScratchpad();
   byte type_s = false;
   // Convert the data to actual temperature
   // because the result is a 16 bit signed integer, it should
@@ -34,26 +34,26 @@ float DS18B20::getTemperatureCelsium()
 void DS18B20::setTemperatureResolution()
 {
     ds.reset();
-    ds.write(0xCC); // skip ROM
-    ds.write(0x4E);///write scratchpad
+    ds.write(CMD_DS_SKIP_ROM); // skip ROM
+    ds.write(CMD_DS_WRITE_SCRATCHPAD);///write scratchpad
     ds.write(0x00);//TH
     ds.write(0x00);//TL
     ds.write(0b01011111);//prefs
 }
-void DS18B20::readDS18B20Scratchpad()
+void DS18B20::readScratchpad()
 {
   byte i;
   ds.reset();
-  ds.write(0xCC);
+  ds.write(CMD_DS_SKIP_ROM);
   //ds.reset();
-  ds.write(0x44); // start conversion
+  ds.write(CMD_DS_START_CONVERSION); // start conversion
   delay(400);     // wait conversion
   // we might do a ds.depower() here, but the reset will take care of it.
    
   ds.reset();
-  ds.write(0xCC);//skip rom
+  ds.write(CMD_DS_SKIP_ROM);//skip rom
   //ds.reset();    
-  ds.write(0xBE);         // Read Scratchpad
+  ds.write(CMD_DS_READ_SCRATCHPAD);         // Read Scratchpad
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     scratchpad[i] = ds.read();
   }
