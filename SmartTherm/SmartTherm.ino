@@ -295,14 +295,15 @@ boolean SendData_Http(SensorData data)
   String sUrlParamDeviceName = "&devicename=" + sDeviceName;
   String sUrlParamCelsium = "&celsium=" + (String)(data.Temperature);
   String sUrlParamDateTime = "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
-                          getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
+                              getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest"));
 
   bool res = true;
   if(ESPMod.cmdConnectionOpenTCP(sHost,nPort)){
     res &= ESPMod.cmdSendData(F("GET /"));
-    // url body
+    // url
     res &= ESPMod.cmdSendData(sRequestUrl);
+    // url parameters
     res &= ESPMod.cmdSendData(sUrlParamDeviceName);
     res &= ESPMod.cmdSendData(sUrlParamCelsium);
     res &= ESPMod.cmdSendData(sUrlParamDateTime);
