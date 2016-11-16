@@ -16,7 +16,7 @@
   #define CMD_I_INFO (8)
   #define CMD_I_HELP (9)
 class UserCmdMngr{
-  private: unsigned char lastFoundCmd;  
+  private: unsigned char lastFoundCmdID;  
   private: SoftwareSerial &_SPort;
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;

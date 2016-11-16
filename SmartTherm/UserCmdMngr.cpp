@@ -37,8 +37,8 @@ void UserCmdMngr::SerialPortLoop()
       (buf[3] == ':')
   ){
                               
-    lastFoundCmd = parseCmdName();
-    if (lastFoundCmd == 0){
+    lastFoundCmdID = parseCmdName();
+    if (lastFoundCmdID == 0){
       _SPort.println(F("Error: Unknown command!"));  
     }  
   }
@@ -85,8 +85,8 @@ unsigned char UserCmdMngr::parseCmdName()
 
 unsigned char UserCmdMngr::PopLatestParsedCmd()
 {
-  unsigned char val = lastFoundCmd;
-  lastFoundCmd = 0;
+  unsigned char val = lastFoundCmdID;
+  lastFoundCmdID = 0;
   return val;
 }
 
