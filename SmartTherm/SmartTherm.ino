@@ -188,7 +188,7 @@ void SendData()
   boolean bSendSuccessful = true;
   if (!flag_NeedSend)
     return;
-  ExtSerial.println(F("\r\n====SendingData===;"));
+  ExtSerial.println(F("\r\n=SendingData="));
   while(RB.BufHasData()){
     SensorData val = RB.pop();// забираем из буфера данные
     // передаем их в отладочный сериал
@@ -203,7 +203,7 @@ void SendData()
     }
   }
   
-  ExtSerial.println(F("====End Data===="));
+  ExtSerial.println(F("=End Data="));
   if (bSendSuccessful){
     flag_NeedSend = false;
   }
@@ -263,7 +263,7 @@ void ConfigureESPWifi()
   //ESPMod.ATCmd("ATE0",1000,"OK");
   if (!ESPMod.WifiAPConnected(WifiAP_Name)){
     if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-      ExtSerial.println(F("ConfigureESPWifi:Fail"));
+      ExtSerial.println(F("ConnectWifi:Fail"));
       return;
     }
   }    

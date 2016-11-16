@@ -9,8 +9,8 @@ class LCDMngr : public PCD8544
   
   void writeStr(String str)
   {
-    int len = str.length();
-    for (int i=0; i<len; i++)
+    unsigned char len = str.length();
+    for ( unsigned char i=0; i<len; i++)
     {
       write(str.charAt(i));
     }
