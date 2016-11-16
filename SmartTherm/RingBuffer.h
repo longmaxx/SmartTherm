@@ -1,8 +1,8 @@
 #include <Arduino.h>
+#include "SensorData.h"
 
-#ifndef SENSORDATA_H
-  #include "SensorData.h"
-#endif  
+#ifndef RINGBUFFER_H
+  #define RINGBUFFER_H
 
 class RingBuffer{
   private:
@@ -19,4 +19,4 @@ class RingBuffer{
     
 };
 
-
+#endif  

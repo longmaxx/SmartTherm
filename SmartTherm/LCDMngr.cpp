@@ -1,7 +1,7 @@
 #ifndef _LCDMNGR_H
 #define _LCDMNGR_H
 #include <PCD8544.h>
-#include <charset.cpp>
+//#include <charset.cpp>
 class LCDMngr : public PCD8544 
 {
   public:

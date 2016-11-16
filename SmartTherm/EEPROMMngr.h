@@ -1,7 +1,7 @@
-#ifndef _EEPROMMNGR_H
 #include <Arduino.h>
 #include <EEPROM.h>
-#define _EEPROMMNGR_H
+#ifndef _EEPROMMNGR_H
+  #define _EEPROMMNGR_H
 
 class EEPROMMngr{
   #define WIFI_ID_EEPROMADDR (0)

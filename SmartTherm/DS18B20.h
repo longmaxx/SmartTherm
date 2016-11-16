@@ -1,7 +1,7 @@
-#ifndef _DS18B20_H
 #include <Arduino.h>
 #include <OneWire.h>
-#define _DS18B20_H
+#ifndef _DS18B20_H
+  #define _DS18B20_H
 
 class DS18B20{
   public:
