@@ -132,7 +132,7 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
         index = 0;
       }
       if (index == (maxIndex)){
-         PrintMessage(F("WaitStrSerial_true"));
+         //PrintMessage(F("WaitStrSerial_true"));
         return true;
       }
       a='\0';
