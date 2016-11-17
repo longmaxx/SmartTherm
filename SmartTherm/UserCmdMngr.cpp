@@ -63,30 +63,6 @@ unsigned char UserCmdMngr::parseCmdName()
       return k+1;
   }
   return 0;
-//  for (unsigned char i=CMD_BUF_BASE;i<bufIndex;i++){
-//    //TODO
-//    // пробегаем по массиву команд и смотрим не совпадает ли байт с текущим
-//    for (unsigned char c = 0;c<commandsCount;c++){
-//     
-//      if (foundState[c] != ST_NOTMATCH){
-//        if (commands[c][i-CMD_BUF_BASE] == buf[i]){
-//          //байт совпал
-//          foundState[c]++;
-//        }else {
-//          foundState[c] = ST_NOTMATCH;
-//        }
-//      }  
-//    }
-//  }
-//  // считаем что получилось по поиску
-//  for (unsigned char k = 0;k<commandsCount;k++ ){
-//    if (foundState[k]!=ST_NOTMATCH){
-//      //_SPort.print("Command detected");
-//      return k+1;// zero mean not found, so begin count from 1
-//    }  
-//  }
-//  //_SPort.println("Parse failed");
-//  return 0;
 }
 
 unsigned char UserCmdMngr::getStrArrLen(const char* arr)
