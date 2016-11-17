@@ -1,6 +1,6 @@
  #include "UserCmdMngr.h"
 
-UserCmdMngr::UserCmdMngr(SoftwareSerial& pSWSP): _SPort(pSWSP) 
+UserCmdMngr::UserCmdMngr(Stream& pSWSP): _SPort(pSWSP) 
 {
 }
 
@@ -32,6 +32,7 @@ void UserCmdMngr::SerialPortLoop()
   // проверяем буфер на наличие команды
   if (bEOLFound)
   {
+    //_SPort.println("EOL found");
     if (findCmdStartStr())
     {
       lastFoundCmdID = parseCmdName();
@@ -55,7 +56,7 @@ unsigned char UserCmdMngr::parseCmdName()
   #define ST_NOTMATCH (-2)
   #define CMD_BUF_BASE (4)
   
-  signed char foundState[commandsCount];
+  //signed char foundState[commandsCount];
   for (unsigned char k = 0;k<commandsCount;k++ ){
     signed char fRes = findCharArrayInBuffer(&buf[CMD_BUF_BASE], bufLen-CMD_BUF_BASE, commands[k],getStrArrLen(commands[k]));
     if (fRes !=-1)
@@ -117,8 +118,8 @@ signed char UserCmdMngr::findCharArrayInBuffer(char* buf, unsigned char buffLen,
       //символ не совпадает. сбрасываем поиск
       tmpIndex = 0;
     }
-    
   }
+  return -1;
 }
 
 unsigned char UserCmdMngr::PopLatestParsedCmd()
