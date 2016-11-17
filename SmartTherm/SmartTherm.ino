@@ -48,9 +48,12 @@
 */
 
 LCDMngr lcd(7,6,5,3,4);
-SoftwareSerial ExtSerial(10,11);// debug serial port
+SoftwareSerial SWSerial(10,11);// debug serial port
 OneWire OneWirePort(12);
 DS18B20 DS(OneWirePort);
+
+#define ExtSerial Serial
+#define WifiSerial SWSerial
 
 DS1307 RTC(18, 19);
 #define RTC_TIME_ZONE_ADDR (0x08)
@@ -67,7 +70,7 @@ signed char nTimeZone = 0;// значение временной зоны. хр�
 
 UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
-WebMngr ESPMod(ExtSerial,Serial);// Wifi class object
+WebMngr ESPMod(WifiSerial,ExtSerial);// Wifi class object
 EEPROMMngr EEManager;// EEPROM actions
 
 boolean flag_NeedSend = false;// есть несохраненные данные
@@ -84,7 +87,7 @@ void setup() {
   //lcd.clear();
   flag_runMainProgram = true;
   
-  Serial.begin(9600);
+  WifiSerial.begin(9600);
   ExtSerial.begin(9600);
   //RTC.halt(false);
   ExtSerial.println(F("Setup"));
@@ -95,7 +98,6 @@ void setup() {
 
 void loop ()
 {
-  
   CmdMngr1.SerialPortLoop();
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){

@@ -18,7 +18,7 @@
 class UserCmdMngr{
   private: const char sCmdStartWord[4] = {'C','M','D',':'};
   private: unsigned char lastFoundCmdID;  
-  private: SoftwareSerial &_SPort;
+  private: Stream &_SPort;
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;
   private: signed char findCharArrayInBuffer(char* buf, unsigned char buffLen, const char* arr, unsigned char arrLen);
@@ -35,7 +35,7 @@ class UserCmdMngr{
                                                   "?"
                                                  };
   
-  public: UserCmdMngr(SoftwareSerial &pSWSP);
+  public: UserCmdMngr(Stream &pSWSP);
   public: void SerialPortLoop();
   public: unsigned char PopLatestParsedCmd();
   private: unsigned char parseCmdName();// возвращает индекс команды или 0
