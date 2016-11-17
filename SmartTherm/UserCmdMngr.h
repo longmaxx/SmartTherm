@@ -16,10 +16,14 @@
   #define CMD_I_INFO (8)
   #define CMD_I_HELP (9)
 class UserCmdMngr{
+  private: const char sCmdStartWord[4] = {'C','M','D',':'};
   private: unsigned char lastFoundCmdID;  
   private: SoftwareSerial &_SPort;
   private: char buf[bufLen];//буфер для сохранения данных команды из порта
   private: unsigned char bufIndex;
+  private: signed char findCharArrayInBuffer(char* buf, unsigned char buffLen, const char* arr, unsigned char arrLen);
+  private: unsigned char getStrArrLen(const char* arr);
+  private: bool findCmdStartStr();
   public: const char* commands[commandsCount] = {"hello",
                                                   "timeset",
                                                   "timeget",
