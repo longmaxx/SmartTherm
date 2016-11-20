@@ -47,27 +47,28 @@
   D13 (LED)
 */
 
-LCDMngr lcd(7,6,5,3,4);
-SoftwareSerial SWSerial(10,11);// debug serial port
 OneWire OneWirePort(12);
-DS18B20 DS(OneWirePort);
-
+SoftwareSerial SWSerial(10,11);// debug serial port
 #define ExtSerial Serial
 #define WifiSerial SWSerial
 
+LCDMngr lcd(7,6,5,3,4);
+DS18B20 DS(OneWirePort);
 DS1307 RTC(18, 19);
+
 #define RTC_TIME_ZONE_ADDR (0x08)
-
 Time lastRefreshDT;// время последнего снятия данных
+signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
+#define DataRefreshIntervalMs  (60000)
+unsigned long LastMillisVal=0;
 float lastTemperatureC;
 
 String WifiAP_Name;
 String WifiAP_Pwd;
-
 String sDeviceName;// = "Nano1";
-signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
+//User classes
 UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod(WifiSerial,ExtSerial);// Wifi class object
@@ -78,9 +79,6 @@ boolean flag_NeedRefreshData   = true;// пора обновлять данны�
 boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в случае каких-либо проблем при отсылке данных на сервер
 boolean flag_ESP_Wifi_Connected = false;// проверяется в главном цикле 
 boolean flag_runMainProgram = true;
-
-#define DataRefreshIntervalMs  (60000)
-unsigned long LastMillisVal=0;
 
 void setup() {
   lcd.begin();
@@ -98,7 +96,7 @@ void setup() {
 
 void loop ()
 {
-  CmdMngr1.SerialPortLoop();
+  CmdMngr1.SerialPortLoop();//check for user input
   ExecuteUserCmdIfNeeded();
   if (flag_runMainProgram){
     if (flag_ESP_NeedConfigure){
