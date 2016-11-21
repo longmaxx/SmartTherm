@@ -15,9 +15,8 @@ bool WebMngr::WifiAPConnected(String sAPName)
     String curAPName = _wifiSerial.readStringUntil('"');
     if (curAPName != sAPName){
       PrintMessage("WifiAPConnected: AP is wrong:"+curAPName);
-      return false;  
+      return true;  
     }
-    
   }else{
     PrintMessage(F("WifiAPConnected: NoCmdResponse"));
     return false;
@@ -31,12 +30,20 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
   if (!WifiAPConnected(sNetName)){
     ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
     ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
-    String cmd="AT+CWJAP_CUR=\"";
-    cmd+=sNetName;
-    cmd+="\",\"";
-    cmd+=sPassword;
-    cmd+="\"";
-    _wifiSerial.println(cmd);
+    
+    _wifiSerial.print("AT+CWJAP_CUR=\"");
+    _wifiSerial.print(sNetName);
+    _wifiSerial.print("\",\"");
+    _wifiSerial.print(sPassword);
+    _wifiSerial.println("\"");
+// 
+//    
+//    String cmd="AT+CWJAP_CUR=\"";
+//    cmd+=sNetName;
+//    cmd+="\",\"";
+//    cmd+=sPassword;
+//    cmd+="\"";
+//    _wifiSerial.println(cmd);
     delay(5000);
     
     if((_wifiSerial.find("WIFI CONNECTED"))&&(_wifiSerial.find("WIFI GOT IP")&&(_wifiSerial.find("\nOK")))){
@@ -47,7 +54,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
       return false;
     }
   }
-  return true;  
+  return false;  
 }
 
 //bool WebMngr::InternetAccess()
@@ -70,6 +77,7 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
   _wifiSerial.flush();
   _wifiSerial.println(cmd);
   //delay(timeout);
+  return _wifiSerial.find(answer);
   if(_wifiSerial.find(answer)) {
     //PrintMessage(F("WifiCmd = True"));
     return true;
