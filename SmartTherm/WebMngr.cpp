@@ -7,10 +7,16 @@ WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSeria
   _wifiSerial.setTimeout(5000);
 }
 
+void WebMngr::flushTimeout()
+{
+  _wifiSerial.setTimeout(1000);
+}
+
 bool WebMngr::WifiAPConnected(String sAPName)
 {
   _wifiSerial.flush();
   _wifiSerial.println(F("AT+CWJAP_CUR?"));
+  flushTimeout();
   if (_wifiSerial.find("\n+CWJAP_CUR:\"")){
     String curAPName = _wifiSerial.readStringUntil('"');
     if (curAPName != sAPName){
@@ -31,30 +37,14 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
     ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
     ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
     
-    _wifiSerial.print("AT+CWJAP_CUR=\"");
+    _wifiSerial.print(F("AT+CWJAP_CUR=\""));
     _wifiSerial.print(sNetName);
-    _wifiSerial.print("\",\"");
+    _wifiSerial.print(F("\",\""));
     _wifiSerial.print(sPassword);
-    _wifiSerial.println("\"");
-// 
-//    
-//    String cmd="AT+CWJAP_CUR=\"";
-//    cmd+=sNetName;
-//    cmd+="\",\"";
-//    cmd+=sPassword;
-//    cmd+="\"";
-//    _wifiSerial.println(cmd);
-    delay(5000);
-    
-    if((_wifiSerial.find("WIFI CONNECTED"))&&(_wifiSerial.find("WIFI GOT IP")&&(_wifiSerial.find("\nOK")))){
-      PrintMessage(F("ConnectWifi: OK"));
-      return true;
-    }else{
-      PrintMessage(F("ConnectWifi: Fail"));
-      return false;
-    }
+    //_wifiSerial.println("\"");
+    return ATCmd(F("\""),8000,sOK);
   }
-  return false;  
+  return true;  
 }
 
 //bool WebMngr::InternetAccess()
@@ -76,16 +66,8 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
 {
   _wifiSerial.flush();
   _wifiSerial.println(cmd);
-  //delay(timeout);
+  _wifiSerial.setTimeout(timeout);
   return _wifiSerial.find(answer);
-  if(_wifiSerial.find(answer)) {
-    //PrintMessage(F("WifiCmd = True"));
-    return true;
-  } else {
-    //PrintMessage(F("WifiCmd = False"));
-    //PrintMessage("|");
-    return false;
-  }
 }
 
 bool WebMngr::cmdSendData(String data)

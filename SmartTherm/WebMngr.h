@@ -3,7 +3,7 @@
   #define WEBMNGR_H
 
 class WebMngr{
-  char sOK[3] = {'O','K','\0'};
+  char sOK[4] = {'\n','O','K','\0'};
   public: WebMngr( Stream &wifiSer,Stream &dbgSer);
   public:
       //boolean ListWifiAPs();
@@ -15,6 +15,7 @@ class WebMngr{
       //bool InternetAccess();
       boolean  ATCmd(String cmd, int timeout, char answer[]);
   private: 
+      void flushTimeout();
       bool WaitStrSerial(char strEtalon[],int timeout);
       Stream& _dbgSerial;
       Stream& _wifiSerial;     
