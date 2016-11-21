@@ -144,9 +144,9 @@ void DrawLCD_Screen1()
 {
   // Wifi status
   lcd.setCursor(0,0);
-  lcd.writeStr(F("WiFi: "));
+  lcd.writeStr(F("WiFi:"));
   if (flag_ESP_Wifi_Connected){
-    lcd.writeStr(F("OK"));
+    lcd.writeStr(WifiAP_Name);
   }else{
     lcd.writeStr(F("Fail"));
   }
@@ -160,9 +160,6 @@ void DrawLCD_Screen1()
   lcd.writeStr(RTC.getTimeStr());
   lcd.setCursor(0,3);
   lcd.writeStr(RTC.getDateStr());
-  //Time
-  lcd.setCursor(0,4);
-  lcd.writeStr(WifiAP_Name);
 }
 #endif
 
