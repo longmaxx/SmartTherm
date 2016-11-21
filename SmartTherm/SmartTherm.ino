@@ -47,12 +47,23 @@
   D13 (LED)
 */
 
+//==Disable\Enable modules===
+#define MOD_USER_CMD
+#define MOD_LCD
+//===========================
+
+
+
+
+
 OneWire OneWirePort(12);
 SoftwareSerial SWSerial(10,11);// debug serial port
 #define ExtSerial Serial
 #define WifiSerial SWSerial
 
-LCDMngr lcd(7,6,5,3,4);
+#ifdef MOD_LCD
+  LCDMngr lcd(7,6,5,3,4);
+#endif  
 DS18B20 DS(OneWirePort);
 DS1307 RTC(18, 19);
 
@@ -69,7 +80,9 @@ String WifiAP_Pwd;
 String sDeviceName;// = "Nano1";
 
 //User classes
-UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
+#ifdef MOD_USER_CMD
+  UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
+#endif
 RingBuffer RB;// Ring buffer class object в этот кольцевой буфер складываем температурные данные, которые потом будет отправлять на веб сервер.
 WebMngr ESPMod(WifiSerial,ExtSerial);// Wifi class object
 EEPROMMngr EEManager;// EEPROM actions
@@ -81,7 +94,9 @@ boolean flag_ESP_Wifi_Connected = false;// проверяется в главн�
 boolean flag_runMainProgram = true;
 
 void setup() {
-  lcd.begin();
+  #ifdef MOD_LCD
+    lcd.begin();
+  #endif
   //lcd.clear();
   flag_runMainProgram = true;
   
@@ -96,8 +111,10 @@ void setup() {
 
 void loop ()
 {
-  CmdMngr1.SerialPortLoop();//check for user input
-  ExecuteUserCmdIfNeeded();
+  #ifdef MOD_USER_CMD
+    CmdMngr1.SerialPortLoop();//check for user input
+    ExecuteUserCmdIfNeeded();
+  #endif
   if (flag_runMainProgram){
     if (flag_ESP_NeedConfigure){
       ConfigureESPWifi();//если необъодимо - переподключаем вайфай
@@ -116,11 +133,13 @@ void loop ()
 
 void DrawLCD()
 {
-  lcd.clear();
-  DrawLCD_Screen1();
+  #ifdef MOD_LCD
+    lcd.clear();
+    DrawLCD_Screen1();
+  #endif
 }
 
-
+#ifdef MOD_LCD
 void DrawLCD_Screen1()
 {
   // Wifi status
@@ -145,7 +164,7 @@ void DrawLCD_Screen1()
   lcd.setCursor(0,4);
   lcd.writeStr(WifiAP_Name);
 }
-
+#endif
 
 void LoadDataFromEEPROM()
 {
@@ -317,6 +336,7 @@ boolean SendData_Http(SensorData data)
 }
 
 //======================COMMANDS=====================================
+#ifdef MOD_USER_CMD
 void ExecuteUserCmdIfNeeded()
 {
   unsigned char cmd = CmdMngr1.PopLatestParsedCmd();
@@ -516,6 +536,7 @@ void Cmd_PrintDeviceInfo()
 
   ExtSerial.println(F("\r\nOK"));
 }
+#endif //#ifdef MOD_USER_CMD
 //====================END Commands===================================
 
 void ExtSerialClear()
