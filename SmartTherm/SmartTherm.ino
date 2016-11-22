@@ -107,6 +107,7 @@ void setup() {
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
+  Cmd_PrintHelp();
 }
 
 void loop ()
@@ -339,14 +340,8 @@ void ExecuteUserCmdIfNeeded()
   unsigned char cmd = CmdMngr1.PopLatestParsedCmd();
   if (cmd>0){
     switch (cmd){
-      case CMD_I_HELLO:
-        Cmd_Hello();
-        break;
       case CMD_I_SETTIME:
         Cmd_SetDate();
-        break;
-      case CMD_I_GETTIME:
-        Cmd_GetDate();
         break;
       case CMD_I_TOGGLE_RUN:
         Cmd_ToggleRunProgram();
@@ -370,11 +365,6 @@ void Cmd_PrintHelp()
 {
   ExtSerial.println(F("Available commands:"));
   CmdMngr1.PrintAvailableCommands();
-}
-
-void Cmd_Hello()
-{
-  ExtSerial.println(F("Hello OK"));  
 }
 
 void Cmd_SetDate()
@@ -433,12 +423,12 @@ void Cmd_SetDate()
  
  RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
  RTC.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
- Cmd_GetDate();
+ Debug_PrintDate();
  ExtSerial.println(F("End Date Setting"));
  //ExtSerial.println(nTimeZone);
 }
 
-void Cmd_GetDate()
+void Debug_PrintDate()
 {
   lastRefreshDT = RTC.getTime();
   ExtSerial.println(F("Date/Time:"));
@@ -530,7 +520,8 @@ void Cmd_PrintDeviceInfo()
   ExtSerial.print(F("Temperature data: "));
   ExtSerial.print(lastTemperatureC);
   ExtSerial.print("C");
-
+  // DATE
+  Debug_PrintDate();
   ExtSerial.println(F("\r\nOK"));
 }
 #endif //#ifdef MOD_USER_CMD
