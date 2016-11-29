@@ -33,11 +33,16 @@ boolean EEPROMMngr::setHostIP(String ip){
 }
 
 int EEPROMMngr::getHostPort(){
-  return this->getIntValue(HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+  //return this->getIntValue(HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+  int tmp = 0;
+  EEPROM.get(HOST_PORT_EEPROMADDR,tmp);
+  return tmp;
 }
 
 boolean EEPROMMngr::setHostPort(int port){
-  return this->setIntValue(port,HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+  //return this->setIntValue(port,HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+  EEPROM.put(HOST_PORT_EEPROMADDR,port);
+  return true;
 }
 
 String EEPROMMngr::getStringValue(unsigned char baseAddr, unsigned char maxLen){
