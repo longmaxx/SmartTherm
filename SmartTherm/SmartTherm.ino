@@ -38,8 +38,8 @@
   A1(15)
   A2(16)
   A3(17)
-  A4(18)  - RTC i2c
-  A5(19)  - RTC i2c
+  A4(18)  - RTC1 i2c
+  A5(19)  - RTC1 i2c
   A6
   A7
   ARef
@@ -65,9 +65,9 @@ SoftwareSerial SWSerial(10,11);// debug serial port
   LCDMngr lcd(7,6,5,3,4);
 #endif  
 DS18B20 DS(OneWirePort);
-DS1307 RTC(18, 19);
+DS1307 RTC1(18, 19);
 
-#define RTC_TIME_ZONE_ADDR (0x08)
+#define RTC1_TIME_ZONE_ADDR (0x08)
 Time lastRefreshDT;// время последнего снятия данных
 signed char nTimeZone = 0;// значение временной зоны. хранится в пользовтельских регистрах модуля часов
 
@@ -102,7 +102,7 @@ void setup() {
   
   WifiSerial.begin(9600);
   ExtSerial.begin(9600);
-  //RTC.halt(false);
+  //RTC1.halt(false);
   ExtSerial.println(F("Setup"));
   LoadDataFromEEPROM();
   LoadTimeZoneValue();
@@ -158,9 +158,9 @@ void DrawLCD_Screen1()
   //Time
   lcd.setCursor(0,2);
   lcd.writeStr(F("Time:"));
-  lcd.writeStr(RTC.getTimeStr());
+  lcd.writeStr(RTC1.getTimeStr());
   lcd.setCursor(0,3);
-  lcd.writeStr(RTC.getDateStr());
+  lcd.writeStr(RTC1.getDateStr());
 }
 #endif
 
@@ -185,7 +185,7 @@ void LoadDataFromEEPROM()
 }
 
 void LoadTimeZoneValue(){
-  nTimeZone = RTC.peek(RTC_TIME_ZONE_ADDR);
+  nTimeZone = RTC1.peek(RTC1_TIME_ZONE_ADDR);
 }
 
 void RefreshDataActions()
@@ -193,7 +193,11 @@ void RefreshDataActions()
   ExtSerial.println(F("Refreshing Data!"));
   lastTemperatureC = DS.getTemperatureCelsium();
   setLastRefreshDateTime();
-  saveTemperatureToRAM();
+  if (lastRefreshDT.year == 2000){
+    ExtSerial.println(F("!!Get time error."));
+    return;
+  }
+  saveDataToRingBuffer();
   PrintOutData();
   flag_NeedSend = true;
   flag_NeedRefreshData = false;
@@ -242,12 +246,11 @@ void CheckRefreshInterval()
 
 void setLastRefreshDateTime()
 {
-  lastRefreshDT = RTC.getTime();
+  lastRefreshDT = RTC1.getTime();
 }
 
 
-void saveTemperatureToRAM(){
-  //реализация кольцевого буфера для хранения температурных данных в RAM  
+void saveDataToRingBuffer(){
   SensorData dt;
   dt.Timestamp = lastRefreshDT;
   dt.Temperature = lastTemperatureC;
@@ -415,14 +418,14 @@ void Cmd_SetDate()
   nTZ = sTimeZone.substring(1).toInt();   
  }
  if (nTZ != 255){
-  RTC.poke(RTC_TIME_ZONE_ADDR,nTZ);
+  RTC1.poke(RTC1_TIME_ZONE_ADDR,nTZ);
   ExtSerial.print(F("savedZone:"));
-  ExtSerial.println((signed char)RTC.peek(RTC_TIME_ZONE_ADDR));
+  ExtSerial.println((signed char)RTC1.peek(RTC1_TIME_ZONE_ADDR));
   LoadDataFromEEPROM();
  }
  
- RTC.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
- RTC.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
+ RTC1.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
+ RTC1.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
  Debug_PrintDate();
  ExtSerial.println(F("End Date Setting"));
  //ExtSerial.println(nTimeZone);
@@ -430,7 +433,7 @@ void Cmd_SetDate()
 
 void Debug_PrintDate()
 {
-  lastRefreshDT = RTC.getTime();
+  lastRefreshDT = RTC1.getTime();
   ExtSerial.println(F("Date/Time:"));
   // Send date
   ExtSerial.print(lastRefreshDT.year);
