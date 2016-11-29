@@ -79,6 +79,9 @@ String WifiAP_Name;
 String WifiAP_Pwd;
 String sDeviceName;// = "Nano1";
 
+String sHost = "192.168.1.100";
+int nPort = 82;
+
 //User classes
 #ifdef MOD_USER_CMD
   UserCmdMngr CmdMngr1(ExtSerial);// класс обрабатывающий пользовательские команды через SoftwareSerial
@@ -249,7 +252,6 @@ void setLastRefreshDateTime()
   lastRefreshDT = RTC1.getTime();
 }
 
-
 void saveDataToRingBuffer(){
   SensorData dt;
   dt.Timestamp = lastRefreshDT;
@@ -308,8 +310,7 @@ String getStrQueryTimeZone(int nTimeZone)
 
 boolean SendData_Http(SensorData data)
 {
-  String sHost = "192.168.1.100";
-  int nPort = 82;
+
   
   String sRequestUrl = F("TMon/index.php?r=temperatures/commit");
   String sUrlParamDeviceName = "&devicename=" + sDeviceName;
