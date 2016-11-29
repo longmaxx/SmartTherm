@@ -24,6 +24,21 @@ boolean EEPROMMngr::setDeviceName(String sName){
   return this->setStringValue(sName,DEVICE_NAME_EEPROMADDR,DEVICE_NAME_MAXLEN);
 }
 
+String EEPROMMngr::getHostIP(){
+  return this->getStringValue(HOST_IP_EEPROMADDR,HOST_IP_MAXLEN);
+}
+
+boolean EEPROMMngr::setHostIP(String ip){
+  return this->setStringValue(ip,HOST_IP_EEPROMADDR,HOST_IP_MAXLEN);
+}
+
+int EEPROMMngr::getHostPort(){
+  return this->getIntValue(HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+}
+
+boolean EEPROMMngr::setHostPort(int port){
+  return this->setIntValue(port,HOST_PORT_EEPROMADDR,HOST_PORT_MAXLEN);
+}
 
 String EEPROMMngr::getStringValue(unsigned char baseAddr, unsigned char maxLen){
   unsigned char i = baseAddr;
