@@ -542,6 +542,8 @@ void Cmd_SetHost()
     ExtSerial.println(F("TODO Check IP!!!"));
     sHost = ip;
     nPort = port;
+    EEManager.setHostIP(sHost);
+    EEManager.setHostPort(nPort);
   }else{
     ExtSerial.println(F("Canceled"));
   }
