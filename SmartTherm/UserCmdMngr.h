@@ -13,6 +13,7 @@
   #define CMD_I_TOGGLE_RUN (5)
   #define CMD_I_SETWIFI (6)
   #define CMD_I_SETNAME (7)
+  #define CMD_I_SETHOST (8)
 
 
 class UserCmdMngr{
@@ -24,7 +25,7 @@ class UserCmdMngr{
   private: signed char findCharArrayInBuffer(char* buf, unsigned char buffLen, const char* arr, unsigned char arrLen);
   private: unsigned char getStrArrLen(const char* arr);
   private: bool findCmdStartStr();
-  public: const char* commands[commandsCount] = { "@",//0 placeholder
+  public: const char* commands[commandsCount+1] = { "@",//0 placeholder
                                                   "?",//1
                                                   "info",//2
                                                   "settime",//3
@@ -32,6 +33,7 @@ class UserCmdMngr{
                                                   "mode",//5
                                                   "setwifi",//6
                                                   "setname"//7
+                                                  "setHost"//8
                                                  };
   
   public: UserCmdMngr(Stream &pSWSP);

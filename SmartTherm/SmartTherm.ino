@@ -361,6 +361,8 @@ void ExecuteUserCmdIfNeeded()
         break;
       case CMD_I_HELP:
         Cmd_PrintHelp();  
+      case CMD_I_SETHOST:
+        Cmd_SetHost();
     }
   }
 }
@@ -473,11 +475,7 @@ void Cmd_SetWifiPreferences()
   ExtSerial.print (sName);
   ExtSerial.print ("/");
   ExtSerial.println(sPwd);
-  ExtSerial.println (F("Save it?(y/n)"));
-  ExtSerialClear();
-  String ans = "n";
-  ans = ReadStrSerial();
-  if ( ans == "y"){
+  if (AskSave()){
     WifiAP_Name = sName;
     WifiAP_Pwd = sPwd;
     EEManager.setWifiName(sName);
@@ -485,8 +483,13 @@ void Cmd_SetWifiPreferences()
     ExtSerial.println(F("OK"));
   }else{
     ExtSerial.println(F("Canceled"));
-    ExtSerial.println(ans);
   }
+}
+boolean AskSave()
+{
+  ExtSerial.println(F("Save it?(1/0)"));
+  ExtSerialClear();
+  return ReadIntSerial() == 1;
 }
 
 void Cmd_SetDeviceName()
@@ -495,11 +498,7 @@ void Cmd_SetDeviceName()
   ExtSerialClear();
   String sName = ReadStrSerial();
 
-  ExtSerial.println(F("Save it?(1/0)"));
-  ExtSerialClear();
-  int ans = 0;
-  ans = ReadIntSerial();
-  if ( ans == 1){
+  if (AskSave()){
     sDeviceName = sName;
     EEManager.setDeviceName(sName);
     ExtSerial.println(F("OK"));
@@ -527,6 +526,25 @@ void Cmd_PrintDeviceInfo()
   // DATE
   Debug_PrintDate();
   ExtSerial.println(F("\r\nOK"));
+}
+
+void Cmd_SetHost()
+{
+  ExtSerial.println(F("Enter host IP"));
+  ExtSerialClear();
+  String ip = ReadStrSerial();
+  
+  ExtSerial.println(F("Enter host port"));
+  ExtSerialClear();
+  int port = ReadIntSerial();
+
+  if (AskSave()){
+    ExtSerial.println(F("TODO Check IP!!!"));
+    sHost = ip;
+    nPort = port;
+  }else{
+    ExtSerial.println(F("Canceled"));
+  }
 }
 #endif //#ifdef MOD_USER_CMD
 //====================END Commands===================================
