@@ -361,8 +361,12 @@ void ExecuteUserCmdIfNeeded()
         break;
       case CMD_I_HELP:
         Cmd_PrintHelp();  
+        break;
       case CMD_I_SETHOST:
         Cmd_SetHost();
+        break;
+      default:
+          ExtSerial.println(F("!!No handler!"));
     }
   }
 }
@@ -430,14 +434,14 @@ void Cmd_SetDate()
  RTC1.setDate(lastRefreshDT.date,lastRefreshDT.mon,lastRefreshDT.year);
  RTC1.setTime  (lastRefreshDT.hour,lastRefreshDT.min,lastRefreshDT.sec);
  Debug_PrintDate();
- ExtSerial.println(F("End Date Setting"));
+ ExtSerial.println(F("\nEnd Date Setting"));
  //ExtSerial.println(nTimeZone);
 }
 
 void Debug_PrintDate()
 {
   lastRefreshDT = RTC1.getTime();
-  ExtSerial.println(F("Date/Time:"));
+  ExtSerial.print(F("Date/Time: "));
   // Send date
   ExtSerial.print(lastRefreshDT.year);
   ExtSerial.print(F("-"));
@@ -489,7 +493,9 @@ boolean AskSave()
 {
   ExtSerial.println(F("Save it?(1/0)"));
   ExtSerialClear();
-  return ReadIntSerial() == 1;
+  boolean res = ReadIntSerial() == 1;;
+  ExtSerial.flush();
+  return res;
 }
 
 void Cmd_SetDeviceName()
@@ -511,6 +517,11 @@ void Cmd_SetDeviceName()
 void Cmd_PrintDeviceInfo()
 {
   ExtSerial.println(F("<Device info>"));
+  //host
+  ExtSerial.print(F("Host: "));
+  ExtSerial.print(sHost);
+  ExtSerial.print(":");
+  ExtSerial.println(nPort);
   //name
   ExtSerial.print(F("Device name: "));
   ExtSerial.println(sDeviceName);
@@ -522,7 +533,7 @@ void Cmd_PrintDeviceInfo()
   //Last temperature
   ExtSerial.print(F("Temperature data: "));
   ExtSerial.print(lastTemperatureC);
-  ExtSerial.print("C");
+  ExtSerial.println("C");
   // DATE
   Debug_PrintDate();
   ExtSerial.println(F("\r\nOK"));

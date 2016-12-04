@@ -32,7 +32,7 @@ class UserCmdMngr{
                                                   "gettemp",//4
                                                   "mode",//5
                                                   "setwifi",//6
-                                                  "setname"//7
+                                                  "setname",//7
                                                   "setHost"//8
                                                  };
   

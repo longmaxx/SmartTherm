@@ -39,8 +39,8 @@ void UserCmdMngr::SerialPortLoop()
       if (lastFoundCmdID == 0){
         _SPort.println(F("Error: Unknown command!"));  
       }  
-      bufIndex=0;
     }  
+    bufIndex=0;
   }
 }
 
@@ -59,9 +59,12 @@ unsigned char UserCmdMngr::parseCmdName()
   //signed char foundState[commandsCount];
   for (unsigned char k = 0;k<commandsCount;k++ ){
     signed char fRes = findCharArrayInBuffer(&buf[CMD_BUF_BASE], bufLen-CMD_BUF_BASE, commands[k],getStrArrLen(commands[k]));
-    if (fRes !=-1)
-      return k+1;
+    _SPort.flush();
+    if (fRes !=-1){
+      return k;
+    }  
   }
+  
   return 0;
 }
 
