@@ -80,7 +80,7 @@ String WifiAP_Pwd;
 String sDeviceName;// = "Nano1";
 
 String sHost = "192.168.1.100";
-int nPort = 82;
+int nPort = 80;
 
 //User classes
 #ifdef MOD_USER_CMD
@@ -184,6 +184,18 @@ void LoadDataFromEEPROM()
   tmp = EEManager.getDeviceName();
   if (tmp.length()>0){
     sDeviceName = tmp;
+  }
+
+  tmp = "";
+  tmp = EEManager.getHostIP();
+  if (tmp.length()>0){
+    sHost = tmp;
+  }
+
+  int iTmp = 0;
+  iTmp = EEManager.getHostPort();
+  if (iTmp>0){
+    nPort = iTmp;
   }
 }
 
@@ -318,7 +330,7 @@ boolean SendData_Http(SensorData data)
   String sUrlParamDateTime = "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
                               getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest"));
-
+  ESPMod.cmdConnectionClose();
   bool res = true;
   if(ESPMod.cmdConnectionOpenTCP(sHost,nPort)){
     res &= ESPMod.cmdSendData(F("GET /"));

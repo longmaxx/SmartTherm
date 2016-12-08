@@ -57,7 +57,7 @@ unsigned char UserCmdMngr::parseCmdName()
   #define CMD_BUF_BASE (4)
   
   //signed char foundState[commandsCount];
-  for (unsigned char k = 0;k<commandsCount;k++ ){
+  for (unsigned char k = 1;k<commandsCount+1;k++ ){
     signed char fRes = findCharArrayInBuffer(&buf[CMD_BUF_BASE], bufLen-CMD_BUF_BASE, commands[k],getStrArrLen(commands[k]));
     _SPort.flush();
     if (fRes !=-1){
@@ -110,7 +110,7 @@ unsigned char UserCmdMngr::PopLatestParsedCmd()
 
 void UserCmdMngr::PrintAvailableCommands()
 {
-  for (unsigned char i=0;i<commandsCount;i++)
+  for (unsigned char i=1;i<commandsCount+1;i++)
   {
     _SPort.println(commands[i]);
   }

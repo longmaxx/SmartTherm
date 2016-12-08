@@ -5,6 +5,7 @@ WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSeria
  // wifiSerial = wifiSer;
   //dbgSerial = dbgSer;
   _wifiSerial.setTimeout(5000);
+  //ATCmd("ATE0",1000,sOK);
 }
 
 void WebMngr::flushTimeout()
@@ -130,6 +131,7 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
     notExpired = (end1>millis());
   }
   PrintMessage(F("WaitStrSerial_false"));
+  //_dbgSerial.println((String)strEtalon);
   return false;
 }
 
