@@ -52,10 +52,6 @@
 #define MOD_LCD
 //===========================
 
-
-
-
-
 OneWire OneWirePort(12);
 SoftwareSerial SWSerial(10,11);// debug serial port
 #define ExtSerial Serial
@@ -128,9 +124,9 @@ void loop ()
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
       DrawLCD();
-    }
-    if (!flag_ESP_NeedConfigure){
-      SendData();
+      if (!flag_ESP_NeedConfigure){
+        SendData();
+      }
     }
   }
 }
