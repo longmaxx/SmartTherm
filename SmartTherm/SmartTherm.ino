@@ -58,7 +58,9 @@ SoftwareSerial SWSerial(10,11);// debug serial port
 #define WifiSerial SWSerial
 
 #ifdef MOD_LCD
+  #define DISPLAY_PAGE_DEFAULT 0
   LCDMngr lcd(7,6,5,3,4);
+  int displayPage = DISPLAY_PAGE_DEFAULT;
 #endif  
 DS18B20 DS(OneWirePort);
 DS1307 RTC1(18, 19);
@@ -135,7 +137,11 @@ void DrawLCD()
 {
   #ifdef MOD_LCD
     lcd.clear();
-    DrawLCD_Screen1();
+    switch (displayPage){
+      case (DISPLAY_PAGE_DEFAULT):
+        DrawLCD_Screen1();
+        break;
+    }
   #endif
 }
 
