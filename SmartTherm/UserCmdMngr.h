@@ -33,7 +33,7 @@ class UserCmdMngr{
                                                   "mode",//5
                                                   "setwifi",//6
                                                   "setname",//7
-                                                  "setHost"//8
+                                                  "sethost"//8
                                                  };
   
   public: UserCmdMngr(Stream &pSWSP);
