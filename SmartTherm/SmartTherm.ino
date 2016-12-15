@@ -335,6 +335,7 @@ boolean SendData_Http(SensorData data)
   ESPMod.cmdConnectionClose();
   bool res = true;
   if(ESPMod.cmdConnectionOpenTCP(sHost,nPort)){
+    delay(500);
     res &= ESPMod.cmdSendData(F("GET /"));
     // url
     res &= ESPMod.cmdSendData(sRequestUrl);
