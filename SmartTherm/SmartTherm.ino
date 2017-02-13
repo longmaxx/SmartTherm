@@ -75,7 +75,7 @@ float lastTemperatureC;
 
 String WifiAP_Name;
 String WifiAP_Pwd;
-String sDeviceName;// = "Nano1";
+String sDeviceName;// = "nano";
 
 String sHost = "192.168.1.100";
 int nPort = 80;
@@ -326,11 +326,11 @@ boolean SendData_Http(SensorData data)
 {
 
   
-  String sRequestUrl = F("TMon/index.php?r=temperatures/commit");
-  String sUrlParamDeviceName = "&devicename=" + sDeviceName;
+  String sRequestUrl = F("TMon2/web/index.php?r=temperatures/commit");
+  String sUrlParamDeviceName = "&device_name=" + sDeviceName;
   String sUrlParamCelsium = "&celsium=" + (String)(data.Temperature);
-  String sUrlParamDateTime = "&date=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec) +
-                              getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
+  String sUrlParamDateTime = "&measured_at=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);// +
+  //                            getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
   ExtSerial.print(F("Send HttpRequest"));
   ESPMod.cmdConnectionClose();
   bool res = true;
@@ -348,6 +348,7 @@ boolean SendData_Http(SensorData data)
     res &= ESPMod.cmdSendData(sHost);
     res &= ESPMod.cmdSendData(":"+(String)nPort+"\r\n\r\n");
   }
+  //delay(3000);// time to receive data from server
   ESPMod.cmdConnectionClose();
   return res;
 }
