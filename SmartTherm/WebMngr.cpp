@@ -75,7 +75,6 @@ bool WebMngr::cmdSendData(String data)
 {
   bool res= false;
   int len = data.length();
-  
   _wifiSerial.flush();
   _wifiSerial.print(F("AT+CIPSEND="));
   _wifiSerial.println(len);
@@ -84,6 +83,7 @@ bool WebMngr::cmdSendData(String data)
     _wifiSerial.print(data);
     res = WaitStrSerial("SEND OK",500);
   }
+  delay(300);// fix busy p... errors
   return res;
 }
 
@@ -101,7 +101,7 @@ bool WebMngr::cmdConnectionClose()
 {
   _wifiSerial.flush();
   _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
-  delay(2000);
+  delay(1000);
   _wifiSerial.flush();
   return true;
 }
