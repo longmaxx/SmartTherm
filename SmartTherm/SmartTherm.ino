@@ -9,7 +9,6 @@
 #include "UserCmdMngr.h"
 #include "EEPROMMngr.h"
 
-
 /*
   NANO3.0 pins
   Left
@@ -240,7 +239,7 @@ void SendData()
       break;
     }
   }
-  
+
   ExtSerial.println(F("=End Data="));
   if (bSendSuccessful){
     flag_NeedSend = false;
@@ -329,9 +328,15 @@ boolean SendData_Http(SensorData data)
   String sRequestUrl = F("TMon2/web/index.php?r=temperatures/commit");
   String sUrlParamDeviceName = "&device_name=" + sDeviceName;
   String sUrlParamCelsium = "&celsium=" + (String)(data.Temperature);
-  String sUrlParamDateTime = "&measured_at=" + (String)data.Timestamp.year + firstZero(data.Timestamp.mon) + firstZero(data.Timestamp.date) + firstZero(data.Timestamp.hour) + firstZero(data.Timestamp.min) + firstZero(data.Timestamp.sec);// +
+  String sUrlParamDateTime = "&measured_at=" + 
+                              (String)data.Timestamp.year    + 
+                              firstZero(data.Timestamp.mon)  + 
+                              firstZero(data.Timestamp.date) + 
+                              firstZero(data.Timestamp.hour) + 
+                              firstZero(data.Timestamp.min)  + 
+                              firstZero(data.Timestamp.sec);// +
   //                            getStrQueryTimeZone(nTimeZone);//"TZ" + nTimeZone;
-  ExtSerial.print(F("Send HttpRequest"));
+  ExtSerial.println(F("Send HttpRequest"));
   ESPMod.cmdConnectionClose();
   bool res = true;
   if(ESPMod.cmdConnectionOpenTCP(sHost,nPort)){
@@ -348,7 +353,7 @@ boolean SendData_Http(SensorData data)
     res &= ESPMod.cmdSendData(sHost);
     res &= ESPMod.cmdSendData(":"+(String)nPort+"\r\n\r\n");
   }
-  //delay(3000);// time to receive data from server
+  delay(3000);// time to receive data from server
   ESPMod.cmdConnectionClose();
   return res;
 }
