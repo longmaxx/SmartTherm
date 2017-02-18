@@ -1,4 +1,4 @@
-
+#include <avr/wdt.h>
 #include <DS1307.h>
 #include <SoftwareSerial.h>
 #include "DS18B20.h"
@@ -94,12 +94,12 @@ boolean flag_ESP_Wifi_Connected = false;// проверяется в главн�
 boolean flag_runMainProgram = true;
 
 void setup() {
+  wdt_enable (WDTO_8S); // Для тестов не рекомендуется устанавливать значение менее 8 сек.
   #ifdef MOD_LCD
     lcd.begin();
   #endif
   //lcd.clear();
   flag_runMainProgram = true;
-  
   WifiSerial.begin(9600);
   ExtSerial.begin(9600);
   //RTC1.halt(false);
@@ -108,10 +108,12 @@ void setup() {
   LoadTimeZoneValue();
   DS.setTemperatureResolution();
   Cmd_PrintHelp();
+  wdt_reset();
 }
 
 void loop ()
 {
+  wdt_reset();
   #ifdef MOD_USER_CMD
     CmdMngr1.SerialPortLoop();//check for user input
     ExecuteUserCmdIfNeeded();
@@ -119,6 +121,7 @@ void loop ()
   if (flag_runMainProgram){
     if (flag_ESP_NeedConfigure){
       ConfigureESPWifi();//если необъодимо - переподключаем вайфай
+      wdt_reset();
     }  
     CheckRefreshInterval();// проверяем не пора ли обновлять данные и выставляем флаг
   
@@ -345,13 +348,16 @@ boolean SendData_Http(SensorData data)
     // url
     res &= ESPMod.cmdSendData(sRequestUrl);
     // url parameters
+    wdt_reset();
     res &= ESPMod.cmdSendData(sUrlParamDeviceName);
     res &= ESPMod.cmdSendData(sUrlParamCelsium);
     res &= ESPMod.cmdSendData(sUrlParamDateTime);
+    wdt_reset();
     // end http request
     res &= ESPMod.cmdSendData(F(" HTTP/1.1\r\nHost:"));
     res &= ESPMod.cmdSendData(sHost);
     res &= ESPMod.cmdSendData(":"+(String)nPort+"\r\n\r\n");
+    wdt_reset();
   }
   delay(3000);// time to receive data from server
   ESPMod.cmdConnectionClose();
@@ -591,14 +597,16 @@ void ExtSerialClear()
 
 int ReadIntSerial()
 {
-  ExtSerial.setTimeout(15000);
+  ExtSerial.setTimeout(5000);
+  wdt_reset();
   //return ExtSerial.parseInt();
   return ExtSerial.readStringUntil('\r').toInt();
 }
 
 String ReadStrSerial()
 {
-  ExtSerial.setTimeout(15000);
+  ExtSerial.setTimeout(5000);
+  wdt_reset();
   return ExtSerial.readStringUntil('\r');
 }
 

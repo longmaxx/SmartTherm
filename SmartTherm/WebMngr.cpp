@@ -1,16 +1,15 @@
 #include "WebMngr.h"
-
+#include <avr/wdt.h>
 WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSerial(dbgSer)
 {
- // wifiSerial = wifiSer;
-  //dbgSerial = dbgSer;
-  _wifiSerial.setTimeout(5000);
+  flushTimeout();
+ // _wifiSerial.setTimeout(5000);
   //ATCmd("ATE0",1000,sOK);
 }
 
 void WebMngr::flushTimeout()
 {
-  _wifiSerial.setTimeout(1000);
+  _wifiSerial.setTimeout(2000);
 }
 
 bool WebMngr::WifiAPConnected(String sAPName)
@@ -25,7 +24,7 @@ bool WebMngr::WifiAPConnected(String sAPName)
       return true;  
     }
   }else{
-    PrintMessage(F("WifiAPConnected: NoCmdResponse"));
+    PrintMessage(F("WifiAPConnected: NoConnect"));
     return false;
   }
   PrintMessage(F("WifiAPConnected: AP is ok"));
@@ -34,16 +33,19 @@ bool WebMngr::WifiAPConnected(String sAPName)
 
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 {
+  
   if (!WifiAPConnected(sNetName)){
-    ATCmd(F("AT+CWQAP"),5000,sOK);//disconnect from any AP
-    ATCmd(F("AT+CWMODE_CUR=1"),2000,sOK);
-    
+    ATCmd(F("AT+CWQAP"),4000,sOK);//disconnect from any AP
+    ATCmd(F("AT+CWMODE_CUR=1"),3000,sOK);
+    _wifiSerial.flush();
     _wifiSerial.print(F("AT+CWJAP_CUR=\""));
     _wifiSerial.print(sNetName);
     _wifiSerial.print(F("\",\""));
     _wifiSerial.print(sPassword);
     //_wifiSerial.println("\"");
-    return ATCmd(F("\""),8000,sOK);
+     bool res = ATCmd(F("\""),20000,sOK);
+     _wifiSerial.println ("ConnectWifi: "+(String)res);
+     return res;
   }
   return true;  
 }
@@ -67,8 +69,16 @@ boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
 {
   _wifiSerial.flush();
   _wifiSerial.println(cmd);
-  _wifiSerial.setTimeout(timeout);
-  return _wifiSerial.find(answer);
+  flushTimeout();
+  int nEndTime = millis()+timeout;
+  bool res = false;
+  while ((millis() < nEndTime) && (!res)){
+    wdt_reset();
+    res = _wifiSerial.find(answer);
+  }
+  return res;
+  //int timeoutOld = _wifiSerial.getTimeout();
+  //return _wifiSerial.find(answer);
 }
 
 bool WebMngr::cmdSendData(String data)
@@ -79,7 +89,7 @@ bool WebMngr::cmdSendData(String data)
   _wifiSerial.print(F("AT+CIPSEND="));
   _wifiSerial.println(len);
 
-  if(WaitStrSerial(">",5000)) {
+  if(WaitStrSerial(">",2000)) {
     _wifiSerial.print(data);
     res = WaitStrSerial("SEND OK",500);
   }
@@ -94,7 +104,7 @@ bool WebMngr::cmdConnectionOpenTCP(String serverIP, int port)
   sCmdOpenTCP.concat(serverIP);
   sCmdOpenTCP.concat(F("\","));
   sCmdOpenTCP.concat(port);
-  return ATCmd(sCmdOpenTCP,5000,sOK);
+  return ATCmd(sCmdOpenTCP,3000,sOK);
 }
 
 bool WebMngr::cmdConnectionClose()
