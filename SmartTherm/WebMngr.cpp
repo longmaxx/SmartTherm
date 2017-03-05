@@ -65,17 +65,20 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 //  return ATCmd(F("AT+CWLAP"),5000,sOK);
 //}
 
-boolean  WebMngr::ATCmd(String cmd, int timeout, char answer[])
+boolean  WebMngr::ATCmd(String cmd, unsigned int timeout, char answer[])
 {
   _wifiSerial.flush();
   _wifiSerial.println(cmd);
   flushTimeout();
-  int nEndTime = millis()+timeout;
+  unsigned long nEndTime = millis()+(unsigned int)timeout;
   bool res = false;
-  while ((millis() < nEndTime) && (!res)){
+  do{
+     _dbgSerial.println("CMD IT");
     wdt_reset();
     res = _wifiSerial.find(answer);
   }
+  while ((millis() < nEndTime) && (!res));
+    
   return res;
   //int timeoutOld = _wifiSerial.getTimeout();
   //return _wifiSerial.find(answer);
@@ -99,17 +102,20 @@ bool WebMngr::cmdSendData(String data)
 
 bool WebMngr::cmdConnectionOpenTCP(String serverIP, int port)
 {
-  String sCmdOpenTCP;
+   PrintMessage(F("OpenTCP"));
+  _wifiSerial.flush();
+  String sCmdOpenTCP = "";
   sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
   sCmdOpenTCP.concat(serverIP);
   sCmdOpenTCP.concat(F("\","));
   sCmdOpenTCP.concat(port);
-  return ATCmd(sCmdOpenTCP,3000,sOK);
+  bool res = ATCmd(sCmdOpenTCP,3000,sOK);
+  PrintMessage((String)res);
+  return res;
 }
 
 bool WebMngr::cmdConnectionClose()
 {
-  _wifiSerial.flush();
   _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
   delay(1000);
   _wifiSerial.flush();
@@ -140,8 +146,8 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
     }
     notExpired = (end1>millis());
   }
-  PrintMessage(F("WaitStrSerial_false"));
-  //_dbgSerial.println((String)strEtalon);
+  _dbgSerial.print(F("WaitStrSerial_false:"));
+  _dbgSerial.println((String)strEtalon);
   return false;
 }
 

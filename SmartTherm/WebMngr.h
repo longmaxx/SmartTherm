@@ -13,7 +13,7 @@ class WebMngr{
       bool cmdConnectionClose();
       bool cmdSendData(String data);
       //bool InternetAccess();
-      boolean  ATCmd(String cmd, int timeout, char answer[]);
+      boolean  ATCmd(String cmd, unsigned int timeout, char answer[]);
   private: 
       void flushTimeout();
       bool WaitStrSerial(char strEtalon[],int timeout);
