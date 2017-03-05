@@ -415,32 +415,32 @@ void Cmd_SetDate()
  ExtSerial.println(F("Enter date\time values"));
  
  ExtSerial.println(F("Year:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.year = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.year);
  
  ExtSerial.println(F("Month:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.mon = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.mon);
  
  ExtSerial.println(F("Day:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.date = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.date);
  
  ExtSerial.println(F("Hour:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.hour  = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.hour);
  
  ExtSerial.println(F("Minute:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.min = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.min);
  
  ExtSerial.println(F("Second:"));
- ExtSerialClear();
+ clearExtSerialBuf();
  lastRefreshDT.sec = ReadIntSerial();
  ExtSerial.println (lastRefreshDT.sec);
  
@@ -499,11 +499,11 @@ void Cmd_ToggleRunProgram()
 void Cmd_SetWifiPreferences()
 {
   ExtSerial.println (F("Enter Wifi name"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   String sName = ReadStrSerial();
 
   ExtSerial.println (F("Enter Wifi Password"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   String sPwd = ReadStrSerial();
   
   ExtSerial.print (sName);
@@ -522,16 +522,16 @@ void Cmd_SetWifiPreferences()
 boolean AskSave()
 {
   ExtSerial.println(F("Save it?(1/0)"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   boolean res = ReadIntSerial() == 1;;
-  ExtSerial.flush();
+  clearExtSerialBuf();
   return res;
 }
 
 void Cmd_SetDeviceName()
 {
   ExtSerial.println(F("Enter device name"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   String sName = ReadStrSerial();
 
   if (AskSave()){
@@ -572,11 +572,11 @@ void Cmd_PrintDeviceInfo()
 void Cmd_SetHost()
 {
   ExtSerial.println(F("Enter host IP"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   String ip = ReadStrSerial();
   
   ExtSerial.println(F("Enter host port"));
-  ExtSerialClear();
+  clearExtSerialBuf();
   int port = ReadIntSerial();
 
   if (AskSave()){
@@ -591,12 +591,6 @@ void Cmd_SetHost()
 }
 #endif //#ifdef MOD_USER_CMD
 //====================END Commands===================================
-
-void ExtSerialClear()
-{
-  ExtSerial.flush();
-  ExtSerial.read();
-}
 
 int ReadIntSerial()
 {
@@ -626,3 +620,11 @@ String firstZero(int val)
     return (String)val;
   }
 }
+
+void clearExtSerialBuf()
+{
+  while(ExtSerial.available()){
+    ExtSerial.read();
+  }
+}
+
