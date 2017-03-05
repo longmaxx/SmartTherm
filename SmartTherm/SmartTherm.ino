@@ -358,6 +358,8 @@ boolean SendData_Http(SensorData data)
     res &= ESPMod.cmdSendData(sHost);
     res &= ESPMod.cmdSendData(":"+(String)nPort+"\r\n\r\n");
     wdt_reset();
+  }else{
+    res = false;
   }
   delay(3000);// time to receive data from server
   ESPMod.cmdConnectionClose();
