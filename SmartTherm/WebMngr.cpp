@@ -7,6 +7,14 @@ WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSeria
   //ATCmd("ATE0",1000,sOK);
 }
 
+void WebMngr::setATE(bool val)
+{
+  if (val){
+    ATCmd("ATE1",1000,sOK);
+  }else{
+    ATCmd("ATE0",1000,sOK);
+  }
+}
 void WebMngr::flushTimeout()
 {
   _wifiSerial.setTimeout(2000);
@@ -14,7 +22,7 @@ void WebMngr::flushTimeout()
 
 bool WebMngr::WifiAPConnected(String sAPName)
 {
-  _wifiSerial.flush();
+  freeSerialBuf();
   _wifiSerial.println(F("AT+CWJAP_CUR?"));
   flushTimeout();
   if (_wifiSerial.find("\n+CWJAP_CUR:\"")){
@@ -37,7 +45,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
   if (!WifiAPConnected(sNetName)){
     ATCmd(F("AT+CWQAP"),4000,sOK);//disconnect from any AP
     ATCmd(F("AT+CWMODE_CUR=1"),3000,sOK);
-    _wifiSerial.flush();
+    freeSerialBuf();
     _wifiSerial.print(F("AT+CWJAP_CUR=\""));
     _wifiSerial.print(sNetName);
     _wifiSerial.print(F("\",\""));
@@ -67,15 +75,22 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 
 boolean  WebMngr::ATCmd(String cmd, unsigned int timeout, char answer[])
 {
-  _wifiSerial.flush();
+  freeSerialBuf();
   _wifiSerial.println(cmd);
   flushTimeout();
   unsigned long nEndTime = millis()+(unsigned int)timeout;
   bool res = false;
+//  _dbgSerial.println(cmd);
+//  _dbgSerial.println(millis());
+//  _dbgSerial.print("Timeout:");
+//  _dbgSerial.println(timeout);
+//  _dbgSerial.print("End:");
+//  _dbgSerial.println(nEndTime);
   do{
-     _dbgSerial.println("CMD IT");
+//     _dbgSerial.println("CMD IT");
     wdt_reset();
-    res = _wifiSerial.find(answer);
+    res = WaitStrSerial(answer, 1000);
+//    _dbgSerial.println(millis());
   }
   while ((millis() < nEndTime) && (!res));
     
@@ -88,7 +103,7 @@ bool WebMngr::cmdSendData(String data)
 {
   bool res= false;
   int len = data.length();
-  _wifiSerial.flush();
+  freeSerialBuf();
   _wifiSerial.print(F("AT+CIPSEND="));
   _wifiSerial.println(len);
 
@@ -103,7 +118,7 @@ bool WebMngr::cmdSendData(String data)
 bool WebMngr::cmdConnectionOpenTCP(String serverIP, int port)
 {
    PrintMessage(F("OpenTCP"));
-  _wifiSerial.flush();
+  freeSerialBuf();
   String sCmdOpenTCP = "";
   sCmdOpenTCP.concat(F("AT+CIPSTART=\"TCP\",\""));
   sCmdOpenTCP.concat(serverIP);
@@ -118,13 +133,14 @@ bool WebMngr::cmdConnectionClose()
 {
   _wifiSerial.println(F("AT+CIPCLOSE\r\n"));
   delay(1000);
-  _wifiSerial.flush();
+ freeSerialBuf();
   return true;
 }
 
 bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
 {
   //unsigned long millis1 = millis();
+//  String buffDbgCopy = "";
   unsigned long end1 = millis()+(unsigned long)timeout;// possibletroubles with millis overflow
   bool notExpired = true;
   unsigned char index = 0;
@@ -133,6 +149,7 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
   while (notExpired){
     while (_wifiSerial.available()>0){
       a = _wifiSerial.read();
+//      buffDbgCopy += a;
       if (strEtalon[index] == a){
         index++;
       }else{
@@ -140,14 +157,19 @@ bool WebMngr::WaitStrSerial(char strEtalon[],int timeout)
       }
       if (index == (maxIndex)){
          //PrintMessage(F("WaitStrSerial_true"));
+//         _dbgSerial.print("RecSyms:");
+//         _dbgSerial.println(buffDbgCopy);
         return true;
       }
       a='\0';
     }
     notExpired = (end1>millis());
   }
-  _dbgSerial.print(F("WaitStrSerial_false:"));
-  _dbgSerial.println((String)strEtalon);
+//  _dbgSerial.print(F("WaitStrSerial_false:"));
+//  _dbgSerial.println((String)strEtalon);
+
+//  _dbgSerial.print("RecSyms:");
+//  _dbgSerial.println(buffDbgCopy);
   return false;
 }
 
@@ -156,5 +178,12 @@ void WebMngr::PrintMessage(String val)
   _dbgSerial.print(F("WebMngr: <"));
   _dbgSerial.print(val);
   _dbgSerial.println(F(">"));
+}
+
+void WebMngr::freeSerialBuf()
+{
+  while(_wifiSerial.available()){
+    _wifiSerial.read();
+  }
 }
 

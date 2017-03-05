@@ -109,6 +109,7 @@ void setup() {
   DS.setTemperatureResolution();
   Cmd_PrintHelp();
   wdt_reset();
+  ESPMod.setATE(false);
 }
 
 void loop ()
