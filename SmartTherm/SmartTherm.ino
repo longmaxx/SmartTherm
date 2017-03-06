@@ -12,8 +12,8 @@
 /*
   NANO3.0 pins
   Left
-  Tx (D0)  - ESP USART
-  Rx (D1)  - ESP USART
+  Tx (D0)  - Debug Serial
+  Rx (D1)  - Debug Serial
   Reset
   Gnd
   D2
@@ -24,8 +24,8 @@
   D7 - LCD
   D8
   D9
-  D10   - ExtSerial
-  D11   - ExtSerial
+  D10   - WifiSerial
+  D11   - WifiSerial
   D12- OneWire
 
   Right
@@ -93,7 +93,8 @@ boolean flag_ESP_NeedConfigure = true;// фдаг выставляется в с
 boolean flag_ESP_Wifi_Connected = false;// проверяется в главном цикле 
 boolean flag_runMainProgram = true;
 
-void setup() {
+void setup()
+{
   wdt_enable (WDTO_8S); // Для тестов не рекомендуется устанавливать значение менее 8 сек.
   #ifdef MOD_LCD
     lcd.begin();
@@ -128,7 +129,9 @@ void loop ()
   
     if (flag_NeedRefreshData){// пора обновлять температурные данные
       RefreshDataActions();
+	  #ifdef MOD_LCD
       DrawLCD();
+	  #endif
       if (!flag_ESP_NeedConfigure){
         SendData();
       }
@@ -136,19 +139,17 @@ void loop ()
   }
 }
 
+#ifdef MOD_LCD
 void DrawLCD()
 {
-  #ifdef MOD_LCD
     lcd.clear();
     switch (displayPage){
       case (DISPLAY_PAGE_DEFAULT):
         DrawLCD_Screen1();
         break;
     }
-  #endif
 }
 
-#ifdef MOD_LCD
 void DrawLCD_Screen1()
 {
   // Wifi status
@@ -204,8 +205,43 @@ void LoadDataFromEEPROM()
   }
 }
 
-void LoadTimeZoneValue(){
+void LoadTimeZoneValue()
+{
   nTimeZone = RTC1.peek(RTC1_TIME_ZONE_ADDR);
+}
+
+void ConfigureESPWifi()
+{
+  flag_ESP_Wifi_Connected = false;
+  //Serial.find("ready");
+  //ESPMod.ATCmd("ATE0",1000,"OK");
+  if (!ESPMod.WifiAPConnected(WifiAP_Name)){
+    if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
+      ExtSerial.println(F("ConnectWifi:Fail"));
+      return;
+    }
+  }    
+  flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
+  flag_ESP_NeedConfigure = false;
+}
+
+//выставляем флаг обновления данных если прошел интервал ожидания
+void CheckRefreshInterval()
+{
+  unsigned long m = millis();
+  unsigned long delta;
+  if (m<LastMillisVal){
+    delta =  (0xFFFFFFFF-LastMillisVal)+m;
+  }else{
+    delta = m-LastMillisVal;
+  }
+  if (delta>DataRefreshIntervalMs)
+    flag_NeedRefreshData = true;
+}
+
+void setLastRefreshDateTime()
+{
+  lastRefreshDT = RTC1.getTime();
 }
 
 void RefreshDataActions()
@@ -222,6 +258,14 @@ void RefreshDataActions()
   flag_NeedSend = true;
   flag_NeedRefreshData = false;
   LastMillisVal = millis();
+}
+
+void saveDataToRingBuffer()
+{
+  SensorData dt;
+  dt.Timestamp = lastRefreshDT;
+  dt.Temperature = lastTemperatureC;
+  RB.push(dt);
 }
 
 void SendData()
@@ -249,81 +293,6 @@ void SendData()
     flag_NeedSend = false;
   }
 }
-
-//выставляем флаг обновления данных если прошел интервал ожидания
-void CheckRefreshInterval()
-{
-  unsigned long m = millis();
-  unsigned long delta;
-  if (m<LastMillisVal){
-    delta =  (0xFFFFFFFF-LastMillisVal)+m;
-  }else{
-    delta = m-LastMillisVal;
-  }
-  if (delta>DataRefreshIntervalMs)
-    flag_NeedRefreshData = true;
-}
-
-void setLastRefreshDateTime()
-{
-  lastRefreshDT = RTC1.getTime();
-}
-
-void saveDataToRingBuffer(){
-  SensorData dt;
-  dt.Timestamp = lastRefreshDT;
-  dt.Temperature = lastTemperatureC;
-  RB.push(dt);
-}
-
-void PrintOutData(){
-  ExtSerial.print(F("  Temperature = "));
-  ExtSerial.print(lastTemperatureC);
-  ExtSerial.print(F(" Celsius,\r\n"));
-  // Send date
-  ExtSerial.print(lastRefreshDT.year);
-  ExtSerial.print(F("-"));
-  ExtSerial.print(lastRefreshDT.mon);
-  ExtSerial.print(F("-"));
-  ExtSerial.print(lastRefreshDT.date);
-  ExtSerial.print(F(" -- "));
-  // Send time
-  ExtSerial.print(lastRefreshDT.hour);
-  ExtSerial.print(F(":"));
-  ExtSerial.print(lastRefreshDT.min);
-  ExtSerial.print(F(":"));
-  ExtSerial.println(lastRefreshDT.sec);
-}
-
-void ConfigureESPWifi()
-{
-  flag_ESP_Wifi_Connected = false;
-  //Serial.find("ready");
-  //ESPMod.ATCmd("ATE0",1000,"OK");
-  if (!ESPMod.WifiAPConnected(WifiAP_Name)){
-    if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
-      ExtSerial.println(F("ConnectWifi:Fail"));
-      return;
-    }
-  }    
-  flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
-  flag_ESP_NeedConfigure = false;
-}
-
-String getStrQueryTimeZone(int nTimeZone)
-{
-  String res = "";
-  if (nTimeZone>0) 
-    res += "%2B";  
-  else
-    res += "-";
-  if (nTimeZone<10)
-    res +="0";
-  res += nTimeZone;
-  res +="00";
-  return res;    
-}
-
 
 boolean SendData_Http(SensorData data)
 {
@@ -365,6 +334,40 @@ boolean SendData_Http(SensorData data)
   delay(3000);// time to receive data from server
   ESPMod.cmdConnectionClose();
   return res;
+}
+
+void PrintOutData()
+{
+  ExtSerial.print(F("  Temperature = "));
+  ExtSerial.print(lastTemperatureC);
+  ExtSerial.print(F(" Celsius,\r\n"));
+  // Send date
+  ExtSerial.print(lastRefreshDT.year);
+  ExtSerial.print(F("-"));
+  ExtSerial.print(lastRefreshDT.mon);
+  ExtSerial.print(F("-"));
+  ExtSerial.print(lastRefreshDT.date);
+  ExtSerial.print(F(" -- "));
+  // Send time
+  ExtSerial.print(lastRefreshDT.hour);
+  ExtSerial.print(F(":"));
+  ExtSerial.print(lastRefreshDT.min);
+  ExtSerial.print(F(":"));
+  ExtSerial.println(lastRefreshDT.sec);
+}
+
+String getStrQueryTimeZone(int nTimeZone)
+{
+  String res = "";
+  if (nTimeZone>0) 
+    res += "%2B";  
+  else
+    res += "-";
+  if (nTimeZone<10)
+    res +="0";
+  res += nTimeZone;
+  res +="00";
+  return res;    
 }
 
 //======================COMMANDS=====================================
@@ -591,6 +594,12 @@ void Cmd_SetHost()
 }
 #endif //#ifdef MOD_USER_CMD
 //====================END Commands===================================
+void clearExtSerialBuf()
+{
+  while(ExtSerial.available()){
+    ExtSerial.read();
+  }
+}
 
 int ReadIntSerial()
 {
@@ -621,10 +630,5 @@ String firstZero(int val)
   }
 }
 
-void clearExtSerialBuf()
-{
-  while(ExtSerial.available()){
-    ExtSerial.read();
-  }
-}
+
 
