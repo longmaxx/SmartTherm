@@ -502,10 +502,12 @@ void Cmd_ToggleRunProgram()
 void Cmd_SetWifiPreferences()
 {
   ExtSerial.println (F("Enter Wifi name"));
+  ExtSerial.flush();
   clearExtSerialBuf();
   String sName = ReadStrSerial();
 
   ExtSerial.println (F("Enter Wifi Password"));
+  ExtSerial.flush();
   clearExtSerialBuf();
   String sPwd = ReadStrSerial();
   
