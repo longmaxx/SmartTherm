@@ -3,8 +3,6 @@
 WebMngr::WebMngr(Stream &wifiSer,Stream &dbgSer): _wifiSerial(wifiSer),_dbgSerial(dbgSer)
 {
   flushTimeout();
- // _wifiSerial.setTimeout(5000);
-  //ATCmd("ATE0",1000,sOK);
 }
 
 void WebMngr::setATE(bool val)
@@ -57,21 +55,6 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
   }
   return true;  
 }
-
-//bool WebMngr::InternetAccess()
-//{
-//  if(ATCmd(F("AT+PING=\"ya.ru\""),5000,sOK)){
-//    PrintMessage(F("OK, Ping internet."));
-//    return true;
-//  }else{
-//    PrintMessage(F("Fail ping internet."));
-//    return false;
-//  }
-//}
-
-//boolean WebMngr::ListWifiAPs(){
-//  return ATCmd(F("AT+CWLAP"),5000,sOK);
-//}
 
 boolean  WebMngr::ATCmd(String cmd, unsigned int timeout, char answer[])
 {

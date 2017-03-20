@@ -7,13 +7,11 @@ class WebMngr{
   public: WebMngr( Stream &wifiSer,Stream &dbgSer);
   public:
       void setATE(bool val);
-      //boolean ListWifiAPs();
       bool WifiAPConnected(String sAPName);
       bool ConnectWifi(String sNetName,String sPassword);
       bool cmdConnectionOpenTCP(String serverIP, int port);
       bool cmdConnectionClose();
       bool cmdSendData(String data);
-      //bool InternetAccess();
       boolean  ATCmd(String cmd, unsigned int timeout, char answer[]);
   private: 
       void flushTimeout();
