@@ -36,8 +36,11 @@ void RingBuffer::push(SensorData value)
   if (this->firstBufIndex == this->lastBufIndex){
     //PrintMessage("Data buffer is full. Old data will be lost.");
     this->firstBufIndex = nextBufIndex(this->firstBufIndex);
+  }else{
+    this->bufCount++;
   }
   //PrintMessage("Push data. "+(String)firstBufIndex + "," + (String)lastBufIndex);
+  
 }
 
 
@@ -47,6 +50,7 @@ SensorData RingBuffer::pop()
   if (BufHasData()){
     byte i = this->firstBufIndex;
     this->firstBufIndex = nextBufIndex(this->firstBufIndex);
+    this->bufCount--;
     return RingBuf[i];
   } else{
     //PrintMessage("Cannot pop data. Buffer is empty.");
@@ -56,12 +60,19 @@ SensorData RingBuffer::pop()
 void RingBuffer::CancelPopData()
 {
   this->firstBufIndex = prevBufIndex(this->firstBufIndex);
+  this->bufCount++;
 }
 //
 bool RingBuffer::BufHasData()
 {
   //возвращает количество непрочитаных данных в буфере
-  return firstBufIndex != lastBufIndex;
+  //return firstBufIndex != lastBufIndex;
+  return this->bufCount>0;
+}
+
+unsigned char RingBuffer::getCount()
+{
+  return (unsigned char)this->bufCount;
 }
 //
 ////=================== Кольцевой буфер End=========================================
