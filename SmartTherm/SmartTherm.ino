@@ -76,7 +76,7 @@ String WifiAP_Name;
 String WifiAP_Pwd;
 String sDeviceName;// = "nano";
 
-String sHost = "192.168.1.100";
+String sHost = "192.168.0.100";
 int nPort = 80;
 
 //User classes
@@ -275,6 +275,8 @@ void SendData()
     return;
   ExtSerial.println(F("\r\n=SendingData="));
   while(RB.BufHasData()){
+    ExtSerial.print(F("Buffer count: "));
+    ExtSerial.println(RB.getCount());
     SensorData val = RB.pop();// забираем из буфера данные
     // передаем их в отладочный сериал
     ExtSerial.println(String(val.Timestamp.hour) + ":" + String(val.Timestamp.min) + ":" + String(val.Timestamp.sec) + " >> " +String(val.Temperature));  
