@@ -215,12 +215,12 @@ void ConfigureESPWifi()
   flag_ESP_Wifi_Connected = false;
   //Serial.find("ready");
   //ESPMod.ATCmd("ATE0",1000,"OK");
-  if (!ESPMod.WifiAPConnected(WifiAP_Name)){
+  //if (!ESPMod.WifiAPConnected(WifiAP_Name)){
     if (!ESPMod.ConnectWifi(WifiAP_Name,WifiAP_Pwd)){
       ExtSerial.println(F("ConnectWifi:Fail"));
       return;
     }
-  }    
+  //}    
   flag_ESP_Wifi_Connected = ESPMod.WifiAPConnected(WifiAP_Name);
   flag_ESP_NeedConfigure = false;
 }
