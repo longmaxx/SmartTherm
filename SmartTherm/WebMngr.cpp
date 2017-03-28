@@ -20,21 +20,24 @@ void WebMngr::flushTimeout()
 
 bool WebMngr::WifiAPConnected(String sAPName)
 {
+  _wifiSerial.flush();
   freeSerialBuf();
   _wifiSerial.println(F("AT+CWJAP_CUR?"));
-  flushTimeout();
-  if (_wifiSerial.find("\n+CWJAP_CUR:\"")){
+  _wifiSerial.flush();
+  if (WaitStrSerial("+CWJAP_CUR:\"",3000)){
     String curAPName = _wifiSerial.readStringUntil('"');
     if (curAPName != sAPName){
       PrintMessage("WifiAPConnected: AP is wrong:"+curAPName);
-      return true;  
+      return false;  
+    }else{
+      PrintMessage(F("WifiAPConnected: AP is ok"));
+      return true;
     }
   }else{
     PrintMessage(F("WifiAPConnected: NoConnect"));
     return false;
   }
-  PrintMessage(F("WifiAPConnected: AP is ok"));
-  return true;
+
 }
 
 bool WebMngr::ConnectWifi(String sNetName,String sPassword)
@@ -50,7 +53,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
     _wifiSerial.print(sPassword);
     //_wifiSerial.println("\"");
      bool res = ATCmd(F("\""),20000,sOK);
-     _wifiSerial.println ("ConnectWifi: "+(String)res);
+     //_wifiSerial.println ("ConnectWifi: "+(String)res);
      return res;
   }
   return true;  
@@ -58,6 +61,7 @@ bool WebMngr::ConnectWifi(String sNetName,String sPassword)
 
 boolean  WebMngr::ATCmd(String cmd, unsigned int timeout, char answer[])
 {
+  _wifiSerial.flush();
   freeSerialBuf();
   _wifiSerial.println(cmd);
   flushTimeout();
